@@ -1,0 +1,14 @@
+AppMainWindow.createModelingPalette: Create the lateral toolbar (entity, attribute, table..) and defines which "drawing" it'll print in the modeling, based on the "text" value
+AppMainWindow.getSelectedEntry: tells you which object the user selected (Entity, attribute, table, etc)
+AppMainWindow.updateTitle: Changes the title on the bigger and smaller frame.
+ModelingManager: insert columns, hierarchy and etc
+ModelingManager.insertObjectToModeling: insert the object the user selected (entity, attribute, etc)
+ModelingPalette.addTemplate: Adds the entity/attribute/key... in the panel based on the "Object value" value. 
+Toolbar constructor: Edit the top toolbar -> new, open, save, print, etc
+
+Click the lateral toolbar: ModelingPalette.addTemplate;
+Click the screen blank space: ModelingEditor.installListeners;
+
+
+Methods signatures:
+InsertVertex (Object parent, string id, Object value, double x, double y, double width, double height, string style)

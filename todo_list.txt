@@ -1,0 +1,5 @@
+TO-DO:
+
+1) ModelingManager.insertDisjointGeneralization: Try to optimize Bubble Sort
+
+2) 
