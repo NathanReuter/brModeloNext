@@ -57,12 +57,7 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.view.mxGraph;
 
-import ufsc.sisinf.brmodelo2all.control.ConceptualConversor;
-import ufsc.sisinf.brmodelo2all.control.ConceptualToNoSql;
-import ufsc.sisinf.brmodelo2all.control.LogicalConversor;
-import ufsc.sisinf.brmodelo2all.control.LogicalConversorToNoSQL;
-import ufsc.sisinf.brmodelo2all.control.ModelingEditor;
-import ufsc.sisinf.brmodelo2all.control.ModelingManager;
+import ufsc.sisinf.brmodelo2all.control.*;
 import ufsc.sisinf.brmodelo2all.model.Modeling;
 import ufsc.sisinf.brmodelo2all.model.ModelingComponent;
 import ufsc.sisinf.brmodelo2all.model.objects.AssociativeEntityObject;
@@ -1843,6 +1838,67 @@ public class CommandActions {
 
 		/**
 		 * 
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			AppMainWindow mainWindow = getEditor(e);
+			ModelingComponent modelingComponent = getModelingComponent(e);
+			NoSqlEditor sqlEditor = new NoSqlEditor();
+			sqlEditor.setTitle(mxResources.get("nosqlEditor"));
+			mainWindow.getDesktop().add(sqlEditor, -1);
+			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
+			conversor.convertModeling();
+			mainWindow.openNoSqlEditor(sqlEditor);
+		}
+
+	}
+
+	@SuppressWarnings("serial")
+	public static class ConvertLogicalToMongoAction extends AbstractAction {
+
+		/**
+		 *
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			AppMainWindow mainWindow = getEditor(e);
+			ModelingComponent modelingComponent = getModelingComponent(e);
+			NoSqlEditor sqlEditor = new NoSqlEditor();
+			sqlEditor.setTitle(mxResources.get("nosqlEditorMongodb"));
+			mainWindow.getDesktop().add(sqlEditor, -1);
+			LogicalConversorToDocument documentConversor = new LogicalConversorToDocument(modelingComponent, sqlEditor);
+//			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
+			documentConversor.convertModeling();
+			mainWindow.openNoSqlEditor(sqlEditor);
+		}
+
+	}
+
+	@SuppressWarnings("serial")
+	public static class ConvertLogicalToCassandraAction extends AbstractAction {
+
+		/**
+		 *
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			AppMainWindow mainWindow = getEditor(e);
+			ModelingComponent modelingComponent = getModelingComponent(e);
+			NoSqlEditor sqlEditor = new NoSqlEditor();
+			sqlEditor.setTitle(mxResources.get("nosqlEditor"));
+			mainWindow.getDesktop().add(sqlEditor, -1);
+			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
+			conversor.convertModeling();
+			mainWindow.openNoSqlEditor(sqlEditor);
+		}
+
+	}
+
+	@SuppressWarnings("serial")
+	public static class ConvertLogicalToRedisAction extends AbstractAction {
+
+		/**
+		 *
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {

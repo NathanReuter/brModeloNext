@@ -20,6 +20,9 @@ import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertConceptualToLogicalActi
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertConceptualToNoSqlAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToPhysicalAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToPhysicalNoSQLAction;
+import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToMongoAction;
+import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToCassandraAction;
+import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToRedisAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.EntityPromotionAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ExitAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.HistoryAction;
@@ -29,6 +32,7 @@ import ufsc.sisinf.brmodelo2all.ui.CommandActions.NewRelationalModelingAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.OpenAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.PrintAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.SaveAction;
+
 
 public class MenuBar extends JMenuBar {
 
@@ -171,7 +175,7 @@ public class MenuBar extends JMenuBar {
 	}
 
 	public void populateConceptualModelingMenu(JMenu menu, final AppMainWindow mainWindow) {
-		menu.add(mainWindow.bind("Convers\u00E3o para modelagem lógica relacional",
+		menu.add(mainWindow.bind("Convers\u00E3o para modelagem lï¿½gica relacional",
 				new ConvertConceptualToLogicalAction()));
 		menu.add(mainWindow.bind("Convers\u00E3o para modelagem NoSQL", new ConvertConceptualToNoSqlAction()));
 	}
@@ -181,11 +185,13 @@ public class MenuBar extends JMenuBar {
 		menu.addSeparator();
 
 		menu.add(mainWindow.bind("Convers\u00E3o para modelagem f\u00EDsica", new ConvertLogicalToPhysicalAction()));
-
 	}
 
 	private void populateNoSQLConvertionMenu(JMenu menu, AppMainWindow mainWindow) {
 		menu.add(mainWindow.bind(mxResources.get("nosql"), new ConvertLogicalToPhysicalNoSQLAction()));
+		menu.add(mainWindow.bind("Gerar modelagem para Mongo (Documento)", new ConvertLogicalToMongoAction()));
+		menu.add(mainWindow.bind("Gerar modelagem para Cassandra (Colunar)", new ConvertLogicalToCassandraAction()));
+		menu.add(mainWindow.bind("Gerar modelagem para Redis (Chave-Valor)", new ConvertLogicalToRedisAction()));
 	}
 
 	public void populateSelectionMenu(JMenu menu, final AppMainWindow mainWindow) {
