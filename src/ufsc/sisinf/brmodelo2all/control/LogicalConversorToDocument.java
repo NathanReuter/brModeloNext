@@ -113,7 +113,7 @@ public class LogicalConversorToDocument {
                         + OPENBRACES
                             + addCollectionAttributes(objectCell)
                         + CLOSEBRACES
-                + CLOSEPARENTHESES + SEMICOLON;
+                + CLOSEPARENTHESES + SEMICOLON + BREAKLINE + BREAKLINE;
     }
 
     private void addCollection(mxCell objectCell) {
@@ -194,21 +194,41 @@ public class LogicalConversorToDocument {
 
         String parcialInstruction = "";
 
+        /*
+		 * Obs: Se o objeto atual for o ultimo filho da colecao, busca todos os
+		 * blocos e atributos que sao required e adiciona na lista. Se for
+		 * utilizado para cada bloco ele ira criar varios required oq nao eh
+		 * permitido pelo JSON-Schema.
+		 */
+//        int lastChild = objectCell.getParent().getChildCount() - 1;
+//        while (((ModelingObject) objectCell.getParent().getChildAt(lastChild).getValue()).getClass()
+//                .equals(DisjunctionObject.class))
+//            lastChild--;
+//
+//        if (objectCell.equals(objectCell.getParent().getChildAt(lastChild))) {
+//            addToRequiredList(objectCell);
+//        }
+
         if (objectCell.getValue() instanceof NoSqlAttributeObject) {
-            if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {
+//            if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {
                 // Obs
-                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
-                    addToRequiredList(objectCell);
-                return "";
-            }
+//                addToRequiredList(objectCell);
+//                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1))) {
+//                }
+//            }
             if (((NoSqlAttributeObject) objectCell.getValue()).isReferenceAttribute()) {
                 // Obs
-                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
-                    addToRequiredList(objectCell);
+                addToRequiredList(objectCell);
+//                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1))) {
+//                }
+
                 addAttributeRef((NoSqlAttributeObject) objectCell.getValue());
-                return "";
+
             }
         }
+
+        addToRequiredList(objectCell);
+
         if (minimum == '1' && maximum == '1') {
             // (1,1)
             if (objectCell.getValue() instanceof Collection)
@@ -251,20 +271,6 @@ public class LogicalConversorToDocument {
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
                 addAttribute(objectCell);
         }
-		/*
-		 * Obs: Se o objeto atual for o ultimo filho da colecao, busca todos os
-		 * blocos e atributos que sao required e adiciona na lista. Se for
-		 * utilizado para cada bloco ele ira criar varios required oq nao eh
-		 * permitido pelo JSON-Schema.
-		 */
-        int lastChild = objectCell.getParent().getChildCount() - 1;
-        while (((ModelingObject) objectCell.getParent().getChildAt(lastChild).getValue()).getClass()
-                .equals(DisjunctionObject.class))
-            lastChild--;
-
-        if (objectCell.equals(objectCell.getParent().getChildAt(lastChild))) {
-            addToRequiredList(objectCell);
-        }
 
         return parcialInstruction;
     }
@@ -280,16 +286,20 @@ public class LogicalConversorToDocument {
      */
     private void addToRequiredList(mxICell objectCell) {
         Collection childBlock;
+
         for (int i = 0; i < objectCell.getParent().getChildCount(); i++) {
+            String ObjectName = objectCell.getParent().getChildAt(i).getValue().toString();
+
             if (objectCell.getParent().getChildAt(i).getValue() instanceof Collection) {
                 childBlock = (Collection) objectCell.getParent().getChildAt(i).getValue();
-                if (childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction())
-                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+                if ((childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction()) && listWithRequired.contains(ObjectName))
+                    listWithRequired.add(ObjectName);
             }
+
             if (objectCell.getParent().getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
                 NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getParent().getChildAt(i).getValue();
-                if (attribute.getMinimumCardinality() == 49 && !attribute.isIdentifierAttribute()) {
-                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+                if ((attribute.getMinimumCardinality() == 49 || attribute.isIdentifierAttribute()) && !listWithRequired.contains(ObjectName)) {
+                    listWithRequired.add(ObjectName);
                 }
             }
         }
@@ -378,10 +388,18 @@ public class LogicalConversorToDocument {
 
     private String addAttributeWithArray2(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
+        String existsLine;
+
+        if (listWithRequired.contains(attributeObject.toString())) {
+            existsLine =  EXISTS + COLON + SPACE + TRUE;
+        } else {
+            existsLine =  EXISTS + COLON + SPACE + FALSE;
+        }
+
         return TAB + BREAKLINE + OPENBRACES
                     + attributeObject.toString() + COLON + SPACE + OPENBRACES
                         + TYPE + COLON + SPACE + QUOTATIONMARK + attributeObject.getType() + QUOTATIONMARK + COMMA
-                        + EXISTS + COLON + SPACE + TRUE
+                        + existsLine
                     + CLOSEBRACES
                 + CLOSEBRACES + COMMA;
     }
