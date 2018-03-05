@@ -120,6 +120,7 @@ public class LogicalConversorToNoSQL {
 					((Collection) objectCell.getValue()).setDisjunction(true);
 				}
 			}
+
 			for (int i = 0; i < objectCell.getChildCount(); i++) {
 				if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
 					NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();

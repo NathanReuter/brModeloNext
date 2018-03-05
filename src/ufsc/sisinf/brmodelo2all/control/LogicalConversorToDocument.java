@@ -46,6 +46,7 @@ public class LogicalConversorToDocument {
     static final String TAB = "  ";
     static final String TABL2 = TAB + TAB;
     static final String TABL3 = TABL2 + TAB;
+    static final String TABL4 = TABL3 + TAB;
     static final String COMMA = ", ";
     static final String SEMICOLON = ";";
     static final String NOTNULL = "NOT NULL";
@@ -72,7 +73,8 @@ public class LogicalConversorToDocument {
     static final String VALIDATIONLEVEL = "validationLevel";
     static final String BSONTYPE = "bsonType";
     static final String TYPEOBJECT = "object";
-    private String instruction = "";
+    static final String PROPERTIES = "properties";
+    private String jsonSchemaIntruction = "";
     private String mongoActionLevel = AppConstants.MONGO_DEFAULT_ACTION_LEVEL;
     private String mongoValitationLevel = AppConstants.MONGO_DEFAULT_VALITION_LEVEL;
     private List<String> listWithRequired = new ArrayList<String>();
@@ -89,7 +91,7 @@ public class LogicalConversorToDocument {
         int y = (int) rect.getY();
         Rectangle ret = new Rectangle(x + 60000, y + 60000);
         Object[] cells = logicalModelingComponent.getCells(ret);
-        instruction += startDB("NovoDB");
+        String instruction = startDB("NovoDB");
 
         for (Object cell : cells) {
             if (cell instanceof mxCell) {
@@ -120,7 +122,7 @@ public class LogicalConversorToDocument {
                                         + OPENBRACES
                                             + BREAKLINE + TABL3 + BSONTYPE + COLON + SPACE + TYPEOBJECT + COMMA + BREAKLINE
                                             + TABL3 + generateJSONSchemaInstructions(objectCell)
-                                        + CLOSEBRACES
+                                        + BREAKLINE + CLOSEBRACES
                                 + BREAKLINE + TAB + CLOSEBRACES
                             + COMMA + BREAKLINE
                             + TAB +VALIDATIONLEVEL + COLON + SPACE + QUOTATIONMARK + mongoActionLevel + QUOTATIONMARK
@@ -135,6 +137,140 @@ public class LogicalConversorToDocument {
 
     private String generateJSONSchemaInstructions(mxCell objectCell) {
         //        addCollectionAttributes (aka)
-        return "";
+
+        String initialTemplete = PROPERTIES + COLON + OPENBRACES
+                    + getCellChild(objectCell)
+                + CLOSEBRACES;
+        return initialTemplete;
+    }
+
+    private String getCellChild(mxCell objectCell) {
+        Collection block;
+        /*Para cada celula filha */
+        for (int i = 0; i < objectCell.getChildCount(); i++) {
+//            SE FOR COLEÇÃO ou Bloco
+            if (objectCell.getChildAt(i).getValue() instanceof Collection) {
+                block = (Collection) objectCell.getChildAt(i).getValue();
+                block.setDisjunction(false);
+                ((Collection) objectCell.getValue()).setDisjunction(false);
+            }
+
+//          Se for tipo disjunção
+            if (objectCell.getChildAt(i).getValue() instanceof DisjunctionObject) {
+                for (Collection childOfDisjunction : ((DisjunctionObject) objectCell.getChildAt(i).getValue())
+                        .getChildList()) {
+                    childOfDisjunction.setDisjunction(true);
+                }
+                ((Collection) objectCell.getValue()).setDisjunction(true);
+            }
+        }
+
+        checkChildCardinality(objectCell);
+
+        return jsonSchemaIntruction;
+    }
+
+    private void checkChildCardinality(mxCell objectCell) {
+//        Para cada filho
+        for (int i = 0; i < objectCell.getChildCount(); i++) {
+            if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
+                NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();
+                cardinalitiesCases(attribute.getMinimumCardinality(), attribute.getMaximumCardinality(),
+                        objectCell.getChildAt(i));
+            }
+
+            if (objectCell.getChildAt(i).getValue() instanceof Collection) {
+                Collection block = (Collection) objectCell.getChildAt(i).getValue();
+                cardinalitiesCases(block.getMinimumCardinality(), block.getMaximumCardinality(),
+                        objectCell.getChildAt(i));
+            }
+        }
+    }
+
+    private void cardinalitiesCases(char minimum, char maximum, mxICell objectCell) {
+        // Caso seja um atributo Identificador, (ID), nao escreva nada.
+        if (objectCell.getValue() instanceof NoSqlAttributeObject) {
+            if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {
+                // Obs
+                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
+//                    addToRequiredList(objectCell);
+                return;
+            }
+            if (((NoSqlAttributeObject) objectCell.getValue()).isReferenceAttribute()) {
+                // Obs
+                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
+//                    addToRequiredList(objectCell);
+                addAttributeRef((NoSqlAttributeObject) objectCell.getValue());
+                return;
+            }
+        }
+
+        if (minimum == '1' && maximum == '1') {
+            // (1,1)
+            if (objectCell.getValue() instanceof Collection) {
+                addBlockWithArray(objectCell);
+            }
+
+            if (objectCell.getValue() instanceof NoSqlAttributeObject){
+                addAttributeWithArray(objectCell);
+            }
+        } else if (minimum == '1' && maximum != '1' && maximum != 'n') {
+            // (1,n) n == number
+            if (objectCell.getValue() instanceof Collection)
+                addBlock(objectCell);
+            if (objectCell.getValue() instanceof NoSqlAttributeObject)
+                addAttributeWithArray(objectCell);
+        } else if (minimum == '0' && maximum == '1') {
+            // (0,1)
+            if (objectCell.getValue() instanceof Collection)
+                addBlockWithArray(objectCell);
+            if (objectCell.getValue() instanceof NoSqlAttributeObject)
+                addAttributeWithArray(objectCell);
+        } else if (minimum == '0' && maximum != '1' && maximum != 'n') {
+            // (0,n) n == number
+            if (objectCell.getValue() instanceof Collection)
+                addBlock(objectCell);
+            if (objectCell.getValue() instanceof NoSqlAttributeObject)
+                addAttributeWithArray(objectCell);
+        } else if (minimum == '1' && maximum == 'n') {
+            if (objectCell.getValue() instanceof Collection)
+                addBlock(objectCell);
+            if (objectCell.getValue() instanceof NoSqlAttributeObject)
+                addAttribute(objectCell);
+        } else if (minimum == '0' && maximum == 'n') {
+            if (objectCell.getValue() instanceof Collection)
+                addBlock(objectCell);
+            if (objectCell.getValue() instanceof NoSqlAttributeObject)
+                addAttribute(objectCell);
+        }
+    }
+
+    public void addAttribute(mxICell objectCell) {
+
+    }
+
+    public void addAttributeRef(NoSqlAttributeObject objectCell) {
+
+    }
+
+    public void addAttributeWithArray(mxICell objectCell) {
+        NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
+
+        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
+                + OPENBRACES + BREAKLINE + TABL4 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK
+                + "array" + QUOTATIONMARK + COMMA + BREAKLINE + TABL4  + "minimum"  + COLON
+                + attributeObject.getMinimumCardinality() + COMMA + BREAKLINE + TABL4  + "maximum"
+                + COLON + attributeObject.getMaximumCardinality() + COMMA + BREAKLINE + TABL4
+                + "items" + COLON + OPENBRACES + BREAKLINE + TABL4 + QUOTATIONMARK + TYPE + QUOTATIONMARK
+                + COLON + SPACE + QUOTATIONMARK + attributeObject.getType() + QUOTATIONMARK + BREAKLINE + TABL4 + CLOSEBRACES
+                + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
+    }
+
+    public void addBlockWithArray(mxICell objectCell) {
+
+    }
+
+    public void addBlock(mxICell objectCell) {
+
     }
 }
