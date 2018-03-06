@@ -8,7 +8,7 @@ public class AppConstants {
 
 	public static final int COMBO_BOX = 2;
 
-	public static final String MONGO_DEFAULT_VALITION_LEVEL = "moderate";
+	public static final String MONGO_DEFAULT_VALIDATION_LEVEL = "moderate";
 
 	public static final String MONGO_DEFAULT_ACTION_LEVEL = "error";
 }

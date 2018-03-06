@@ -7,7 +7,6 @@ import com.mxgraph.util.mxResources;
 import ufsc.sisinf.brmodelo2all.model.ModelingComponent;
 import ufsc.sisinf.brmodelo2all.model.objects.Collection;
 import ufsc.sisinf.brmodelo2all.model.objects.DisjunctionObject;
-import ufsc.sisinf.brmodelo2all.model.objects.ModelingObject;
 import ufsc.sisinf.brmodelo2all.model.objects.NoSqlAttributeObject;
 import ufsc.sisinf.brmodelo2all.ui.NoSqlEditor;
 
@@ -47,6 +46,8 @@ public class LogicalConversorToDocument {
     static final String TABL2 = TAB + TAB;
     static final String TABL3 = TABL2 + TAB;
     static final String TABL4 = TABL3 + TAB;
+    static final String TABL5 = TABL4 + TAB;
+    static final String TABL6 = TABL5 + TAB;
     static final String COMMA = ", ";
     static final String SEMICOLON = ";";
     static final String NOTNULL = "NOT NULL";
@@ -63,7 +64,7 @@ public class LogicalConversorToDocument {
     static final String COLON = ":";
     static final String QUOTATIONMARK = mxResources.get("quotationMark");
     static final String SELECTDB = "use";
-    static final String TYPE = "$type";
+    static final String TYPE = "type";
     static final String EXISTS = "$exists";
     static final String ALL = "$all";
     static final String TRUE = "true";
@@ -76,7 +77,7 @@ public class LogicalConversorToDocument {
     static final String PROPERTIES = "properties";
     private String jsonSchemaIntruction = "";
     private String mongoActionLevel = AppConstants.MONGO_DEFAULT_ACTION_LEVEL;
-    private String mongoValitationLevel = AppConstants.MONGO_DEFAULT_VALITION_LEVEL;
+    private String mongoValitationLevel = AppConstants.MONGO_DEFAULT_VALIDATION_LEVEL;
     private List<String> listWithRequired = new ArrayList<String>();
     private String path;
 
@@ -120,14 +121,14 @@ public class LogicalConversorToDocument {
                                 + OPENBRACES
                                     + BREAKLINE + TABL2 + JSONSCHEMA + COLON + SPACE
                                         + OPENBRACES
-                                            + BREAKLINE + TABL3 + BSONTYPE + COLON + SPACE + TYPEOBJECT + COMMA + BREAKLINE
+                                            + BREAKLINE + TABL3 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + TYPEOBJECT + QUOTATIONMARK +  COMMA + BREAKLINE
                                             + TABL3 + generateJSONSchemaInstructions(objectCell)
                                         + BREAKLINE + CLOSEBRACES
                                 + BREAKLINE + TAB + CLOSEBRACES
                             + COMMA + BREAKLINE
-                            + TAB +VALIDATIONLEVEL + COLON + SPACE + QUOTATIONMARK + mongoActionLevel + QUOTATIONMARK
+                            + TAB + VALITATIONACTION + COLON + SPACE + QUOTATIONMARK + mongoActionLevel + QUOTATIONMARK
                             + COMMA + BREAKLINE
-                            + TAB + VALITATIONACTION + COLON + SPACE + QUOTATIONMARK + mongoValitationLevel + QUOTATIONMARK + BREAKLINE
+                            + TAB + VALIDATIONLEVEL + COLON + SPACE + QUOTATIONMARK + mongoValitationLevel + QUOTATIONMARK + BREAKLINE
                         + CLOSEBRACES
                 + CLOSEPARENTHESES + SEMICOLON + BREAKLINE + BREAKLINE;
 
@@ -144,7 +145,7 @@ public class LogicalConversorToDocument {
         return initialTemplete;
     }
 
-    private String getCellChild(mxCell objectCell) {
+    private String getCellChild(mxICell objectCell) {
         Collection block;
         /*Para cada celula filha */
         for (int i = 0; i < objectCell.getChildCount(); i++) {
@@ -170,7 +171,7 @@ public class LogicalConversorToDocument {
         return jsonSchemaIntruction;
     }
 
-    private void checkChildCardinality(mxCell objectCell) {
+    private void checkChildCardinality(mxICell objectCell) {
 //        Para cada filho
         for (int i = 0; i < objectCell.getChildCount(); i++) {
             if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
@@ -257,20 +258,66 @@ public class LogicalConversorToDocument {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
-                + OPENBRACES + BREAKLINE + TABL4 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK
-                + "array" + QUOTATIONMARK + COMMA + BREAKLINE + TABL4  + "minimum"  + COLON
-                + attributeObject.getMinimumCardinality() + COMMA + BREAKLINE + TABL4  + "maximum"
-                + COLON + attributeObject.getMaximumCardinality() + COMMA + BREAKLINE + TABL4
-                + "items" + COLON + OPENBRACES + BREAKLINE + TABL4 + QUOTATIONMARK + TYPE + QUOTATIONMARK
-                + COLON + SPACE + QUOTATIONMARK + attributeObject.getType() + QUOTATIONMARK + BREAKLINE + TABL4 + CLOSEBRACES
-                + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
+                + OPENBRACES
+                    + BREAKLINE + TABL5 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK + COMMA
+                    + BREAKLINE + TABL5  + "minimum"  + COLON + attributeObject.getMinimumCardinality() + COMMA
+                    + BREAKLINE + TABL5  + "maximum" + COLON + attributeObject.getMaximumCardinality() + COMMA
+                    + BREAKLINE + TABL5 + "items" + COLON
+                        + OPENBRACES
+                        + BREAKLINE + TABL6 + TYPE
+                        + COLON + SPACE + QUOTATIONMARK + attributeObject.getType() + QUOTATIONMARK + BREAKLINE + TABL5
+                    + CLOSEBRACES
+                    + BREAKLINE
+                + TABL4 + CLOSEBRACES + COMMA;
     }
 
     public void addBlockWithArray(mxICell objectCell) {
+        Collection block = (Collection) objectCell.getValue();
 
+        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+                + OPENBRACES
+                + blockIdIntruction(objectCell)
+
+                + BREAKLINE + TABL5 + TYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
+                + BREAKLINE + TABL5 + "minimum"  + COLON + block.getMinimumCardinality() + COMMA
+                + BREAKLINE + TABL5 + "maximum"  + COLON + block.getMaximumCardinality() + COMMA
+                + BREAKLINE + TABL5 + "items" + COLON + OPENBRACKETS
+                    + BREAKLINE + TABL5 + OPENBRACES
+                    + BREAKLINE + TABL6 + TAB+  TYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
+                    + BREAKLINE + TABL6 + "properties"
+                    + COLON + OPENBRACES;
+
+            getCellChild(objectCell);
+            jsonSchemaIntruction +=  BREAKLINE + TABL6 + CLOSEBRACES + COMMA;
+    //        if (listWithRequired.size() > 0)
+    //            requiredObjects();
+    //        if (((Collection) objectCell.getValue()).getDisjunction())
+    //            requiredForDisjunction(objectCell);
+
+            jsonSchemaIntruction += BREAKLINE + TABL5  + "additionalProperties"  + " : false" + COMMA
+                    + BREAKLINE + TABL5 + CLOSEBRACES
+                    + BREAKLINE + TABL4 + CLOSEBRACKTS + COMMA
+                    + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
     }
 
     public void addBlock(mxICell objectCell) {
 
+    }
+
+    public String blockIdIntruction(mxICell objectCell) {
+        if (objectCell.getChildCount() > 0) {
+            for (int i = 0; i < objectCell.getChildCount(); i++) {
+                if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
+                    NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();
+                    if (attribute.isIdentifierAttribute())
+                        return BREAKLINE + QUOTATIONMARK + "id" + QUOTATIONMARK + SPACE + COLON + SPACE
+                            + QUOTATIONMARK + "#"
+                            + ((NoSqlAttributeObject) objectCell.getChildAt(i).getValue()).getName() + QUOTATIONMARK
+                            + COMMA;
+                }
+            }
+        }
+
+        return "";
     }
 }
