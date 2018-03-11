@@ -209,45 +209,48 @@ public class LogicalConversorToDocument {
         if (minimum == '1' && maximum == '1') {
             // (1,1)
             if (objectCell.getValue() instanceof Collection) {
-                addBlockWithArray(objectCell);
+                addBlock(objectCell);
             }
 
             if (objectCell.getValue() instanceof NoSqlAttributeObject){
-                addAttributeWithArray(objectCell);
+                addAttribute(objectCell);
             }
         } else if (minimum == '1' && maximum != '1' && maximum != 'n') {
             // (1,n) n == number
             if (objectCell.getValue() instanceof Collection)
-                addBlock(objectCell);
+                addBlockWithArray(objectCell);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
                 addAttributeWithArray(objectCell);
         } else if (minimum == '0' && maximum == '1') {
             // (0,1)
             if (objectCell.getValue() instanceof Collection)
-                addBlockWithArray(objectCell);
+                addBlock(objectCell);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttributeWithArray(objectCell);
+                addAttribute(objectCell);
         } else if (minimum == '0' && maximum != '1' && maximum != 'n') {
             // (0,n) n == number
             if (objectCell.getValue() instanceof Collection)
-                addBlock(objectCell);
+                addBlockWithArray(objectCell);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
                 addAttributeWithArray(objectCell);
-        } else if (minimum == '1' && maximum == 'n') {
-            if (objectCell.getValue() instanceof Collection)
-                addBlock(objectCell);
-            if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttribute(objectCell);
-        } else if (minimum == '0' && maximum == 'n') {
-            if (objectCell.getValue() instanceof Collection)
-                addBlock(objectCell);
-            if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttribute(objectCell);
+        } else if ((minimum == '1' && maximum == 'n') || (minimum == '0' && maximum == 'n')) {
+            if (objectCell.getValue() instanceof Collection) {
+                addBlockWithArray(objectCell);
+            }
+            if (objectCell.getValue() instanceof NoSqlAttributeObject) {
+                addAttributeWithArray(objectCell);
+            }
         }
     }
 
     public void addAttribute(mxICell objectCell) {
+        NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
 
+        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+                + OPENBRACES
+                    + SPACE + BSONTYPE + COLON + SPACE + QUOTATIONMARK
+                    + attributeObject.getType() + QUOTATIONMARK
+                + CLOSEBRACES + COMMA;
     }
 
     public void addAttributeRef(NoSqlAttributeObject objectCell) {
@@ -256,12 +259,13 @@ public class LogicalConversorToDocument {
 
     public void addAttributeWithArray(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
+        String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5  + "maximum" + COLON + attributeObject.getMaximumCardinality() + COMMA;
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
                 + OPENBRACES
                     + BREAKLINE + TABL5 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK + COMMA
                     + BREAKLINE + TABL5  + "minimum"  + COLON + attributeObject.getMinimumCardinality() + COMMA
-                    + BREAKLINE + TABL5  + "maximum" + COLON + attributeObject.getMaximumCardinality() + COMMA
+                    + maximumLine
                     + BREAKLINE + TABL5 + "items" + COLON
                         + OPENBRACES
                         + BREAKLINE + TABL6 + TYPE
@@ -273,6 +277,7 @@ public class LogicalConversorToDocument {
 
     public void addBlockWithArray(mxICell objectCell) {
         Collection block = (Collection) objectCell.getValue();
+        String maximumLine = block.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5 + "maximum"  + COLON + block.getMaximumCardinality() + COMMA;
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
@@ -280,7 +285,7 @@ public class LogicalConversorToDocument {
 
                 + BREAKLINE + TABL5 + TYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
                 + BREAKLINE + TABL5 + "minimum"  + COLON + block.getMinimumCardinality() + COMMA
-                + BREAKLINE + TABL5 + "maximum"  + COLON + block.getMaximumCardinality() + COMMA
+                + maximumLine
                 + BREAKLINE + TABL5 + "items" + COLON + OPENBRACKETS
                     + BREAKLINE + TABL5 + OPENBRACES
                     + BREAKLINE + TABL6 + TAB+  TYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
@@ -301,7 +306,21 @@ public class LogicalConversorToDocument {
     }
 
     public void addBlock(mxICell objectCell) {
-
+        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+                + OPENBRACES
+                    + BREAKLINE + TABL5 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
+                    + blockIdIntruction(objectCell)
+                + BREAKLINE  + TABL5 + "properties"  + COLON + OPENBRACES;
+        // If the block has child encapsulate the block or attribute inside this
+        // block.
+        getCellChild(objectCell);
+        jsonSchemaIntruction += BREAKLINE + TABL5 + CLOSEBRACES + COMMA;
+//        if (listWithRequired.size() > 0)
+//            requiredObjects();
+//        if (((Collection) objectCell.getValue()).getDisjunction())
+//            requiredForDisjunction(objectCell);
+        jsonSchemaIntruction += BREAKLINE  + TABL5 + "additionalProperties" + " : false" + COMMA
+                + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
     }
 
     public String blockIdIntruction(mxICell objectCell) {
