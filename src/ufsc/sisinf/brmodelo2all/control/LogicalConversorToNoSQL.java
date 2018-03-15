@@ -146,7 +146,6 @@ public class LogicalConversorToNoSQL {
 	 */
 	private void cardinalitiesCases(char minimum, char maximum, mxICell objectCell) {
 		// Caso seja um atributo Identificador, (ID), nao escreva nada.
-		System.out.println(objectCell.getValue());
 
 		if (objectCell.getValue() instanceof NoSqlAttributeObject) {
 			if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {

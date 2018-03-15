@@ -75,6 +75,7 @@ public class LogicalConversorToDocument {
     static final String VALIDATIONLEVEL = "validationLevel";
     static final String BSONTYPE = "bsonType";
     static final String TYPEOBJECT = "object";
+    static final String TYPEOBJECTID = "objectId";
     static final String PROPERTIES = "properties";
     private String jsonSchemaIntruction = "";
     private String mongoActionLevel = AppConstants.MONGO_DEFAULT_ACTION_LEVEL;
@@ -144,6 +145,9 @@ public class LogicalConversorToDocument {
                     + getCellChild(objectCell)
                 + BREAKLINE + TABL3 + CLOSEBRACES + COMMA
                 + generateRequeredObjectsInstruction(listWithRequired);
+//        Clean instructions
+        jsonSchemaIntruction = "";
+
         return initialTemplete;
     }
 
@@ -194,18 +198,10 @@ public class LogicalConversorToDocument {
         // Caso seja um atributo Identificador, (ID), nao escreva nada.
 
         if (objectCell.getValue() instanceof NoSqlAttributeObject) {
-            if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {
-                // Obs
-                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
-//                    addToRequiredList(objectCell);
-                return;
-            }
-            if (((NoSqlAttributeObject) objectCell.getValue()).isReferenceAttribute()) {
-                // Obs
-                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1)))
-//                    addToRequiredList(objectCell);
-                addAttributeRef((NoSqlAttributeObject) objectCell.getValue());
-                return;
+            if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute() || ((NoSqlAttributeObject) objectCell.getValue()).isReferenceAttribute()) {
+                if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1))) {
+                    addToRequiredList(objectCell);
+                }
             }
         }
 
@@ -252,11 +248,21 @@ public class LogicalConversorToDocument {
 
     private void addAttribute(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
+        String attributeName = objectCell.getValue().toString();
+        String attributeType = attributeObject.getType();
 
-        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+        if (attributeObject.isIdentifierAttribute()) {
+            attributeType = TYPEOBJECTID;
+            attributeName = "_" + attributeObject.getName();
+
+        } else if (attributeObject.isReferenceAttribute()) {
+            attributeType = TYPEOBJECTID;
+        }
+
+                jsonSchemaIntruction += BREAKLINE + TABL4 + attributeName + COLON + SPACE
                 + OPENBRACES
                     + SPACE + BSONTYPE + COLON + SPACE + QUOTATIONMARK
-                    + attributeObject.getType() + QUOTATIONMARK
+                    + attributeType + QUOTATIONMARK
                 + CLOSEBRACES + COMMA;
     }
 
@@ -379,7 +385,7 @@ public class LogicalConversorToDocument {
             }
         }
 
-        instruction += "]";
+        instruction += "]" + COMMA;
         requiredList.clear();
 
         return instruction;
