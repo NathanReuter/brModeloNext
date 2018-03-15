@@ -7,6 +7,7 @@ import com.mxgraph.util.mxResources;
 import ufsc.sisinf.brmodelo2all.model.ModelingComponent;
 import ufsc.sisinf.brmodelo2all.model.objects.Collection;
 import ufsc.sisinf.brmodelo2all.model.objects.DisjunctionObject;
+import ufsc.sisinf.brmodelo2all.model.objects.ModelingObject;
 import ufsc.sisinf.brmodelo2all.model.objects.NoSqlAttributeObject;
 import ufsc.sisinf.brmodelo2all.ui.NoSqlEditor;
 
@@ -141,7 +142,8 @@ public class LogicalConversorToDocument {
 
         String initialTemplete = PROPERTIES + COLON + OPENBRACES
                     + getCellChild(objectCell)
-                + CLOSEBRACES;
+                + BREAKLINE + TABL3 + CLOSEBRACES + COMMA
+                + generateRequeredObjectsInstruction(listWithRequired);
         return initialTemplete;
     }
 
@@ -190,6 +192,7 @@ public class LogicalConversorToDocument {
 
     private void cardinalitiesCases(char minimum, char maximum, mxICell objectCell) {
         // Caso seja um atributo Identificador, (ID), nao escreva nada.
+
         if (objectCell.getValue() instanceof NoSqlAttributeObject) {
             if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute()) {
                 // Obs
@@ -241,9 +244,13 @@ public class LogicalConversorToDocument {
                 addAttributeWithArray(objectCell);
             }
         }
+
+        if (objectCell.equals(getLastChild(objectCell))) {
+            addToRequiredList(objectCell);
+        }
     }
 
-    public void addAttribute(mxICell objectCell) {
+    private void addAttribute(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
@@ -257,14 +264,14 @@ public class LogicalConversorToDocument {
 
     }
 
-    public void addAttributeWithArray(mxICell objectCell) {
+    private void addAttributeWithArray(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
-        String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5  + "maximum" + COLON + attributeObject.getMaximumCardinality() + COMMA;
+        String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5  + "maxItems" + COLON + attributeObject.getMaximumCardinality() + COMMA;
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
                 + OPENBRACES
                     + BREAKLINE + TABL5 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK + COMMA
-                    + BREAKLINE + TABL5  + "minimum"  + COLON + attributeObject.getMinimumCardinality() + COMMA
+                    + BREAKLINE + TABL5  + "minItems"  + COLON + attributeObject.getMinimumCardinality() + COMMA
                     + maximumLine
                     + BREAKLINE + TABL5 + "items" + COLON
                         + OPENBRACES
@@ -275,16 +282,16 @@ public class LogicalConversorToDocument {
                 + TABL4 + CLOSEBRACES + COMMA;
     }
 
-    public void addBlockWithArray(mxICell objectCell) {
+    private void addBlockWithArray(mxICell objectCell) {
         Collection block = (Collection) objectCell.getValue();
-        String maximumLine = block.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5 + "maximum"  + COLON + block.getMaximumCardinality() + COMMA;
+        String maximumLine = block.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5 + "maxItems"  + COLON + block.getMaximumCardinality() + COMMA;
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
                 + blockIdIntruction(objectCell)
 
                 + BREAKLINE + TABL5 + TYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
-                + BREAKLINE + TABL5 + "minimum"  + COLON + block.getMinimumCardinality() + COMMA
+                + BREAKLINE + TABL5 + "minItems"  + COLON + block.getMinimumCardinality() + COMMA
                 + maximumLine
                 + BREAKLINE + TABL5 + "items" + COLON + OPENBRACKETS
                     + BREAKLINE + TABL5 + OPENBRACES
@@ -294,10 +301,11 @@ public class LogicalConversorToDocument {
 
             getCellChild(objectCell);
             jsonSchemaIntruction +=  BREAKLINE + TABL6 + CLOSEBRACES + COMMA;
-    //        if (listWithRequired.size() > 0)
-    //            requiredObjects();
-    //        if (((Collection) objectCell.getValue()).getDisjunction())
-    //            requiredForDisjunction(objectCell);
+
+
+            if (((Collection) objectCell.getValue()).getDisjunction()) {
+                jsonSchemaIntruction += generateColectionRequiredList(generateObjectCellChildList(objectCell));
+            }
 
             jsonSchemaIntruction += BREAKLINE + TABL5  + "additionalProperties"  + " : false" + COMMA
                     + BREAKLINE + TABL5 + CLOSEBRACES
@@ -305,7 +313,7 @@ public class LogicalConversorToDocument {
                     + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
     }
 
-    public void addBlock(mxICell objectCell) {
+    private void addBlock(mxICell objectCell) {
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
                     + BREAKLINE + TABL5 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
@@ -315,15 +323,18 @@ public class LogicalConversorToDocument {
         // block.
         getCellChild(objectCell);
         jsonSchemaIntruction += BREAKLINE + TABL5 + CLOSEBRACES + COMMA;
-//        if (listWithRequired.size() > 0)
-//            requiredObjects();
-//        if (((Collection) objectCell.getValue()).getDisjunction())
-//            requiredForDisjunction(objectCell);
+
+        if (!listWithRequired.isEmpty()) {
+            jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired);
+        } else if (((Collection) objectCell.getValue()).getDisjunction()) {
+            jsonSchemaIntruction += generateColectionRequiredList(generateObjectCellChildList(objectCell));
+        }
+
         jsonSchemaIntruction += BREAKLINE  + TABL5 + "additionalProperties" + " : false" + COMMA
                 + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
     }
 
-    public String blockIdIntruction(mxICell objectCell) {
+    private String blockIdIntruction(mxICell objectCell) {
         if (objectCell.getChildCount() > 0) {
             for (int i = 0; i < objectCell.getChildCount(); i++) {
                 if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
@@ -338,5 +349,78 @@ public class LogicalConversorToDocument {
         }
 
         return "";
+    }
+
+    private void addToRequiredList(mxICell objectCell) {
+        Collection childBlock;
+        for (int i = 0; i < objectCell.getParent().getChildCount(); i++) {
+            if (objectCell.getParent().getChildAt(i).getValue() instanceof Collection) {
+                childBlock = (Collection) objectCell.getParent().getChildAt(i).getValue();
+                if (childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction())
+                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+            }
+            if (objectCell.getParent().getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
+                NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getParent().getChildAt(i).getValue();
+                if (attribute.getMinimumCardinality() == 49 && !attribute.isIdentifierAttribute()) {
+                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+                }
+            }
+        }
+    }
+
+    private String generateRequeredObjectsInstruction(List<String> requiredList) {
+        String instruction = BREAKLINE + TABL3 + "required" + COLON + SPACE + "[";
+
+        for (int i = 0; i < listWithRequired.size(); i++) {
+            if (i != listWithRequired.size() - 1) {
+                instruction += QUOTATIONMARK + listWithRequired.get(i) + QUOTATIONMARK + COMMA;
+            } else {
+                instruction += QUOTATIONMARK + listWithRequired.get(i) + QUOTATIONMARK;
+            }
+        }
+
+        instruction += "]";
+        requiredList.clear();
+
+        return instruction;
+    }
+
+    public List<Object> generateObjectCellChildList(mxICell collectionCell) {
+        List<Object> childList = new ArrayList<Object>();
+
+        for (int i = 0; i < collectionCell.getChildCount(); i++) {
+            childList.add(collectionCell.getChildAt(i));
+        }
+
+        return childList;
+    }
+
+    private String generateColectionRequiredList(List<Object> list) {
+        String instruction = "";
+
+        for (Object child : list) {
+            if (((mxICell) child).getValue() instanceof DisjunctionObject) {
+                instruction += BREAKLINE +  "oneOf"  + " : [" + BREAKLINE;
+
+                for (Object disjunctionChild : ((DisjunctionObject) ((mxICell) child).getValue()).getChildList()) {
+                    instruction += OPENBRACES + QUOTATIONMARK + "required" + QUOTATIONMARK + " : [" + QUOTATIONMARK
+                            + disjunctionChild.toString() + QUOTATIONMARK + "]" + CLOSEBRACES + COMMA + BREAKLINE;
+                }
+                instruction += "]" + COMMA;
+            }
+        }
+
+        return instruction;
+    }
+
+    private mxICell getLastChild(mxICell objectCell) {
+        int lastChild = objectCell.getParent().getChildCount() - 1;
+
+        while (((ModelingObject) objectCell.getParent().getChildAt(lastChild).getValue()).getClass()
+                .equals(DisjunctionObject.class)) {
+            lastChild--;
+        }
+
+        return objectCell.getParent().getChildAt(lastChild);
     }
 }
