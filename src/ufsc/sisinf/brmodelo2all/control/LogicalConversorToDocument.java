@@ -38,6 +38,9 @@ import ufsc.sisinf.brmodelo2all.util.AppConstants;
  *
  */
 
+
+// TODO GENERATE INSTRUCTION FOR DISJUNCTION
+
 public class LogicalConversorToDocument {
 
     private final ModelingComponent logicalModelingComponent;
@@ -66,10 +69,6 @@ public class LogicalConversorToDocument {
     static final String QUOTATIONMARK = mxResources.get("quotationMark");
     static final String SELECTDB = "use";
     static final String TYPE = "type";
-    static final String EXISTS = "$exists";
-    static final String ALL = "$all";
-    static final String TRUE = "true";
-    static final String FALSE = "false";
     static final String JSONSCHEMA = "$jsonSchema";
     static final String VALITATIONACTION = "validationAction";
     static final String VALIDATIONLEVEL = "validationLevel";
@@ -144,7 +143,8 @@ public class LogicalConversorToDocument {
         String initialTemplete = PROPERTIES + COLON + OPENBRACES
                     + getCellChild(objectCell)
                 + BREAKLINE + TABL3 + CLOSEBRACES + COMMA
-                + generateRequeredObjectsInstruction(listWithRequired);
+                + generateRequeredObjectsInstruction(listWithRequired)
+                + generateRequiredDisjunctionInstructions(objectCell);
 //        Clean instructions
         jsonSchemaIntruction = "";
 
@@ -266,13 +266,11 @@ public class LogicalConversorToDocument {
                 + CLOSEBRACES + COMMA;
     }
 
-    public void addAttributeRef(NoSqlAttributeObject objectCell) {
-
-    }
-
     private void addAttributeWithArray(mxICell objectCell) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
         String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5  + "maxItems" + COLON + attributeObject.getMaximumCardinality() + COMMA;
+        String attributeType = (attributeObject.isIdentifierAttribute() || attributeObject.isReferenceAttribute())
+                ? TYPEOBJECTID : attributeObject.getType();
 
         jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
                 + OPENBRACES
@@ -281,8 +279,8 @@ public class LogicalConversorToDocument {
                     + maximumLine
                     + BREAKLINE + TABL5 + "items" + COLON
                         + OPENBRACES
-                        + BREAKLINE + TABL6 + TYPE
-                        + COLON + SPACE + QUOTATIONMARK + attributeObject.getType() + QUOTATIONMARK + BREAKLINE + TABL5
+                        + BREAKLINE + TABL6 + BSONTYPE
+                        + COLON + SPACE + QUOTATIONMARK + attributeType + QUOTATIONMARK + BREAKLINE + TABL5
                     + CLOSEBRACES
                     + BREAKLINE
                 + TABL4 + CLOSEBRACES + COMMA;
@@ -357,18 +355,26 @@ public class LogicalConversorToDocument {
         return "";
     }
 
+    private void addToList(List<String> list, String value) {
+        if (!list.contains(value)) {
+            list.add(value);
+        }
+    }
+
     private void addToRequiredList(mxICell objectCell) {
         Collection childBlock;
         for (int i = 0; i < objectCell.getParent().getChildCount(); i++) {
             if (objectCell.getParent().getChildAt(i).getValue() instanceof Collection) {
                 childBlock = (Collection) objectCell.getParent().getChildAt(i).getValue();
-                if (childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction())
-                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+                if ((childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction()))
+                    addToList(listWithRequired, objectCell.getParent().getChildAt(i).getValue().toString());
             }
             if (objectCell.getParent().getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
                 NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getParent().getChildAt(i).getValue();
-                if (attribute.getMinimumCardinality() == 49 && !attribute.isIdentifierAttribute()) {
-                    listWithRequired.add(objectCell.getParent().getChildAt(i).getValue().toString());
+                if ((attribute.getMinimumCardinality() == 49)) {
+                    addToList(listWithRequired,
+                            (attribute.isIdentifierAttribute() ? "_" : "") +
+                                    ((NoSqlAttributeObject) objectCell.getParent().getChildAt(i).getValue()).getName());
                 }
             }
         }
@@ -428,5 +434,28 @@ public class LogicalConversorToDocument {
         }
 
         return objectCell.getParent().getChildAt(lastChild);
+    }
+
+    private String generateRequiredDisjunctionInstructions(mxICell objectCell) {
+        List<Object> collectionChild = new ArrayList<Object>();
+        String instruction = "";
+
+        for (int i = 0; i < objectCell.getChildCount(); i++) {
+            collectionChild.add(objectCell.getChildAt(i));
+        }
+
+        for (Object child : collectionChild) {
+            if (((mxICell) child).getValue() instanceof DisjunctionObject) {
+                instruction += BREAKLINE  + "oneOf" + " : [" + BREAKLINE;
+                for (Object disjunctionChild : ((DisjunctionObject) ((mxICell) child).getValue()).getChildList()) {
+                    instruction += OPENBRACES + QUOTATIONMARK + "required" + QUOTATIONMARK + " : [" + QUOTATIONMARK
+                            + disjunctionChild.toString() + QUOTATIONMARK + "]" + CLOSEBRACES + COMMA + BREAKLINE;
+                }
+
+                instruction += "]" + COMMA;
+            }
+        }
+
+        return instruction;
     }
 }
