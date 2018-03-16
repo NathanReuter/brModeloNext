@@ -124,7 +124,7 @@ public class LogicalConversorToDocument {
                                         + OPENBRACES
                                             + BREAKLINE + TABL3 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + TYPEOBJECT + QUOTATIONMARK +  COMMA + BREAKLINE
                                             + TABL3 + generateJSONSchemaInstructions(objectCell)
-                                        + BREAKLINE + CLOSEBRACES
+                                        + BREAKLINE + TABL3 + CLOSEBRACES
                                 + BREAKLINE + TAB + CLOSEBRACES
                             + COMMA + BREAKLINE
                             + TAB + VALITATIONACTION + COLON + SPACE + QUOTATIONMARK + mongoActionLevel + QUOTATIONMARK
@@ -331,7 +331,7 @@ public class LogicalConversorToDocument {
         if (!listWithRequired.isEmpty()) {
             jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired);
         } else if (((Collection) objectCell.getValue()).getDisjunction()) {
-            jsonSchemaIntruction += generateColectionRequiredList(generateObjectCellChildList(objectCell));
+            jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell);
         }
 
         jsonSchemaIntruction += BREAKLINE  + TABL5 + "additionalProperties" + " : false" + COMMA
@@ -446,13 +446,14 @@ public class LogicalConversorToDocument {
 
         for (Object child : collectionChild) {
             if (((mxICell) child).getValue() instanceof DisjunctionObject) {
-                instruction += BREAKLINE  + "oneOf" + " : [" + BREAKLINE;
+                instruction += BREAKLINE + TABL3 + "oneOf" + " : [" + BREAKLINE;
+
                 for (Object disjunctionChild : ((DisjunctionObject) ((mxICell) child).getValue()).getChildList()) {
-                    instruction += OPENBRACES + QUOTATIONMARK + "required" + QUOTATIONMARK + " : [" + QUOTATIONMARK
+                    instruction += TABL4 + OPENBRACES  + "required" + " : [" + QUOTATIONMARK
                             + disjunctionChild.toString() + QUOTATIONMARK + "]" + CLOSEBRACES + COMMA + BREAKLINE;
                 }
 
-                instruction += "]" + COMMA;
+                instruction += TABL3 + "]" + COMMA;
             }
         }
 
