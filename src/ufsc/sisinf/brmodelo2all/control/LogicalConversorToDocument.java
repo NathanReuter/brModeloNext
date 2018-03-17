@@ -307,8 +307,10 @@ public class LogicalConversorToDocument {
             jsonSchemaIntruction +=  BREAKLINE + TABL6 + CLOSEBRACES + COMMA;
 
 
-            if (((Collection) objectCell.getValue()).getDisjunction()) {
-                jsonSchemaIntruction += generateColectionRequiredList(generateObjectCellChildList(objectCell));
+            if (!listWithRequired.isEmpty()) {
+                jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired);
+            } else if (((Collection) objectCell.getValue()).getDisjunction()) {
+                jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell);
             }
 
             jsonSchemaIntruction += BREAKLINE + TABL5  + "additionalProperties"  + " : false" + COMMA
