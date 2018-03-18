@@ -651,6 +651,23 @@ public class AppMainWindow extends JPanel {
 		}
 	}
 
+	public void displayNosqlConvertOptions() {
+		JFrame frame = (JFrame) SwingUtilities.windowForComponent(this);
+
+		if (frame != null) {
+			NosqlConfigWindow nosqlConfigWindow = new NosqlConfigWindow(frame);
+			nosqlConfigWindow.setModal(true);
+
+			// Centers inside the application frame
+			int x = frame.getX() + (frame.getWidth() - nosqlConfigWindow.getWidth()) / 2;
+			int y = frame.getY() + (frame.getHeight() - nosqlConfigWindow.getHeight()) / 2;
+			nosqlConfigWindow.setLocation(x, y);
+
+			// Shows the modal dialog and waits
+			nosqlConfigWindow.setVisible(true);
+		}
+	}
+
 	public void properties(Object cell, ModelingComponent modelingComponent) {
 		JFrame frame = (JFrame) SwingUtilities.windowForComponent(this);
 		boolean c = false;

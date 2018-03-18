@@ -64,7 +64,6 @@ public class LogicalConversorToDocument {
     static final String CLOSEBRACKTS = "]";
     static final String CREATECOLLECTIONCOMMAND = "db.createCollection";
     static final String VALIDATOR = "validator";
-    static final String OR = "$or";
     static final String COLON = ":";
     static final String QUOTATIONMARK = mxResources.get("quotationMark");
     static final String SELECTDB = "use";
@@ -123,8 +122,8 @@ public class LogicalConversorToDocument {
                                     + BREAKLINE + TABL2 + JSONSCHEMA + COLON + SPACE
                                         + OPENBRACES
                                             + BREAKLINE + TABL3 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + TYPEOBJECT + QUOTATIONMARK +  COMMA + BREAKLINE
-                                            + TABL3 + generateJSONSchemaInstructions(objectCell)
-                                        + BREAKLINE + TABL3 + CLOSEBRACES
+                                            + TABL3 + generateJSONSchemaInstructions(objectCell, TABL3)
+                                        + BREAKLINE + TABL2 + CLOSEBRACES
                                 + BREAKLINE + TAB + CLOSEBRACES
                             + COMMA + BREAKLINE
                             + TAB + VALITATIONACTION + COLON + SPACE + QUOTATIONMARK + mongoActionLevel + QUOTATIONMARK
@@ -137,21 +136,19 @@ public class LogicalConversorToDocument {
     }
 
 
-    private String generateJSONSchemaInstructions(mxCell objectCell) {
-        //        addCollectionAttributes (aka)
-
+    private String generateJSONSchemaInstructions(mxCell objectCell, String INDENT) {
         String initialTemplete = PROPERTIES + COLON + OPENBRACES
-                    + getCellChild(objectCell)
-                + BREAKLINE + TABL3 + CLOSEBRACES + COMMA
-                + generateRequeredObjectsInstruction(listWithRequired)
-                + generateRequiredDisjunctionInstructions(objectCell);
+                    + getCellChild(objectCell, INDENT)
+                + BREAKLINE + INDENT + CLOSEBRACES + COMMA
+                + generateRequeredObjectsInstruction(listWithRequired, INDENT)
+                + generateRequiredDisjunctionInstructions(objectCell, INDENT);
 //        Clean instructions
         jsonSchemaIntruction = "";
 
         return initialTemplete;
     }
 
-    private String getCellChild(mxICell objectCell) {
+    private String getCellChild(mxICell objectCell, String INDENT) {
         Collection block;
         /*Para cada celula filha */
         for (int i = 0; i < objectCell.getChildCount(); i++) {
@@ -172,31 +169,29 @@ public class LogicalConversorToDocument {
             }
         }
 
-        checkChildCardinality(objectCell);
+        checkChildCardinality(objectCell, INDENT);
 
         return jsonSchemaIntruction;
     }
 
-    private void checkChildCardinality(mxICell objectCell) {
+    private void checkChildCardinality(mxICell objectCell, String INDENT) {
 //        Para cada filho
         for (int i = 0; i < objectCell.getChildCount(); i++) {
             if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
                 NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();
                 cardinalitiesCases(attribute.getMinimumCardinality(), attribute.getMaximumCardinality(),
-                        objectCell.getChildAt(i));
+                        objectCell.getChildAt(i), INDENT);
             }
 
             if (objectCell.getChildAt(i).getValue() instanceof Collection) {
                 Collection block = (Collection) objectCell.getChildAt(i).getValue();
                 cardinalitiesCases(block.getMinimumCardinality(), block.getMaximumCardinality(),
-                        objectCell.getChildAt(i));
+                        objectCell.getChildAt(i), INDENT);
             }
         }
     }
 
-    private void cardinalitiesCases(char minimum, char maximum, mxICell objectCell) {
-        // Caso seja um atributo Identificador, (ID), nao escreva nada.
-
+    private void cardinalitiesCases(char minimum, char maximum, mxICell objectCell, String INDENT) {
         if (objectCell.getValue() instanceof NoSqlAttributeObject) {
             if (((NoSqlAttributeObject) objectCell.getValue()).isIdentifierAttribute() || ((NoSqlAttributeObject) objectCell.getValue()).isReferenceAttribute()) {
                 if (objectCell.equals(objectCell.getParent().getChildAt(objectCell.getParent().getChildCount() - 1))) {
@@ -208,36 +203,36 @@ public class LogicalConversorToDocument {
         if (minimum == '1' && maximum == '1') {
             // (1,1)
             if (objectCell.getValue() instanceof Collection) {
-                addBlock(objectCell);
+                addBlock(objectCell, INDENT);
             }
 
             if (objectCell.getValue() instanceof NoSqlAttributeObject){
-                addAttribute(objectCell);
+                addAttribute(objectCell, INDENT);
             }
         } else if (minimum == '1' && maximum != '1' && maximum != 'n') {
             // (1,n) n == number
             if (objectCell.getValue() instanceof Collection)
-                addBlockWithArray(objectCell);
+                addBlockWithArray(objectCell, INDENT);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttributeWithArray(objectCell);
+                addAttributeWithArray(objectCell, INDENT);
         } else if (minimum == '0' && maximum == '1') {
             // (0,1)
             if (objectCell.getValue() instanceof Collection)
-                addBlock(objectCell);
+                addBlock(objectCell, INDENT);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttribute(objectCell);
+                addAttribute(objectCell, INDENT);
         } else if (minimum == '0' && maximum != '1' && maximum != 'n') {
             // (0,n) n == number
             if (objectCell.getValue() instanceof Collection)
-                addBlockWithArray(objectCell);
+                addBlockWithArray(objectCell, INDENT);
             if (objectCell.getValue() instanceof NoSqlAttributeObject)
-                addAttributeWithArray(objectCell);
+                addAttributeWithArray(objectCell, INDENT);
         } else if ((minimum == '1' && maximum == 'n') || (minimum == '0' && maximum == 'n')) {
             if (objectCell.getValue() instanceof Collection) {
-                addBlockWithArray(objectCell);
+                addBlockWithArray(objectCell, INDENT);
             }
             if (objectCell.getValue() instanceof NoSqlAttributeObject) {
-                addAttributeWithArray(objectCell);
+                addAttributeWithArray(objectCell, INDENT);
             }
         }
 
@@ -246,7 +241,7 @@ public class LogicalConversorToDocument {
         }
     }
 
-    private void addAttribute(mxICell objectCell) {
+    private void addAttribute(mxICell objectCell, String INDENT) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
         String attributeName = objectCell.getValue().toString();
         String attributeType = attributeObject.getType();
@@ -259,85 +254,86 @@ public class LogicalConversorToDocument {
             attributeType = TYPEOBJECTID;
         }
 
-                jsonSchemaIntruction += BREAKLINE + TABL4 + attributeName + COLON + SPACE
+                jsonSchemaIntruction += BREAKLINE + INDENT + TAB + attributeName + COLON + SPACE
                 + OPENBRACES
                     + SPACE + BSONTYPE + COLON + SPACE + QUOTATIONMARK
                     + attributeType + QUOTATIONMARK
                 + CLOSEBRACES + COMMA;
     }
 
-    private void addAttributeWithArray(mxICell objectCell) {
+    private void addAttributeWithArray(mxICell objectCell, String INDENT) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
-        String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5  + "maxItems" + COLON + attributeObject.getMaximumCardinality() + COMMA;
+        String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + INDENT + TABL2  + "maxItems" + COLON + attributeObject.getMaximumCardinality() + COMMA;
         String attributeType = (attributeObject.isIdentifierAttribute() || attributeObject.isReferenceAttribute())
                 ? TYPEOBJECTID : attributeObject.getType();
 
-        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString()  + COLON + SPACE
+        jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString()  + COLON + SPACE
                 + OPENBRACES
-                    + BREAKLINE + TABL5 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK + COMMA
-                    + BREAKLINE + TABL5  + "minItems"  + COLON + attributeObject.getMinimumCardinality() + COMMA
+                    + BREAKLINE + INDENT + TABL2 +  BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK + COMMA
+                    + BREAKLINE + INDENT + TABL2  + "minItems"  + COLON + attributeObject.getMinimumCardinality() + COMMA
                     + maximumLine
-                    + BREAKLINE + TABL5 + "items" + COLON
+                    + BREAKLINE + INDENT + TABL2 + "items" + COLON
                         + OPENBRACES
-                        + BREAKLINE + TABL6 + BSONTYPE
-                        + COLON + SPACE + QUOTATIONMARK + attributeType + QUOTATIONMARK + BREAKLINE + TABL5
+                        + BREAKLINE + INDENT + TABL3 + BSONTYPE
+                        + COLON + SPACE + QUOTATIONMARK + attributeType + QUOTATIONMARK
+                        + BREAKLINE + INDENT + TABL2
                     + CLOSEBRACES
                     + BREAKLINE
-                + TABL4 + CLOSEBRACES + COMMA;
+                + INDENT + TAB + CLOSEBRACES + COMMA;
     }
 
-    private void addBlockWithArray(mxICell objectCell) {
+    private void addBlockWithArray(mxICell objectCell, String INDENT) {
         Collection block = (Collection) objectCell.getValue();
         String maximumLine = block.getMaximumCardinality() == 'n' ? "" : BREAKLINE + TABL5 + "maxItems"  + COLON + block.getMaximumCardinality() + COMMA;
 
-        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+        jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
                 + blockIdIntruction(objectCell)
 
-                + BREAKLINE + TABL5 + TYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
-                + BREAKLINE + TABL5 + "minItems"  + COLON + block.getMinimumCardinality() + COMMA
+                + BREAKLINE + INDENT + TABL2 + BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
+                + BREAKLINE + INDENT + TABL2 + "minItems"  + COLON + block.getMinimumCardinality() + COMMA
                 + maximumLine
-                + BREAKLINE + TABL5 + "items" + COLON + OPENBRACKETS
-                    + BREAKLINE + TABL5 + OPENBRACES
-                    + BREAKLINE + TABL6 + TAB+  TYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
-                    + BREAKLINE + TABL6 + "properties"
+                + BREAKLINE + INDENT + TABL2 + "items" + COLON + OPENBRACKETS
+                    + BREAKLINE + INDENT + TABL2 + OPENBRACES
+                    + BREAKLINE + INDENT + TABL3 +  BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
+                    + BREAKLINE + INDENT + TABL3 + "properties"
                     + COLON + OPENBRACES;
 
-            getCellChild(objectCell);
-            jsonSchemaIntruction +=  BREAKLINE + TABL6 + CLOSEBRACES + COMMA;
+            getCellChild(objectCell, INDENT + TABL3);
+            jsonSchemaIntruction +=  BREAKLINE + INDENT + TABL3 + CLOSEBRACES + COMMA;
 
 
             if (!listWithRequired.isEmpty()) {
-                jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired);
+                jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired, INDENT + TABL2);
             } else if (((Collection) objectCell.getValue()).getDisjunction()) {
-                jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell);
+                jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell, INDENT + TABL2);
             }
 
-            jsonSchemaIntruction += BREAKLINE + TABL5  + "additionalProperties"  + " : false" + COMMA
-                    + BREAKLINE + TABL5 + CLOSEBRACES
-                    + BREAKLINE + TABL4 + CLOSEBRACKTS + COMMA
-                    + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
+            jsonSchemaIntruction += BREAKLINE + INDENT + TABL3  + "additionalProperties"  + " : false" + COMMA
+                    + BREAKLINE + INDENT + TABL2 + CLOSEBRACES
+                    + BREAKLINE + INDENT + TAB + CLOSEBRACKTS + COMMA
+                    + BREAKLINE + INDENT + TAB + CLOSEBRACES + COMMA;
     }
 
-    private void addBlock(mxICell objectCell) {
-        jsonSchemaIntruction += BREAKLINE + TABL4 + objectCell.getValue().toString() + COLON + SPACE
+    private void addBlock(mxICell objectCell, String INDENT) {
+        jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
-                    + BREAKLINE + TABL5 + BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
+                    + BREAKLINE + INDENT + TABL2  + BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
                     + blockIdIntruction(objectCell)
-                + BREAKLINE  + TABL5 + "properties"  + COLON + OPENBRACES;
+                + BREAKLINE  + INDENT + TABL2  + "properties"  + COLON + OPENBRACES;
         // If the block has child encapsulate the block or attribute inside this
         // block.
-        getCellChild(objectCell);
-        jsonSchemaIntruction += BREAKLINE + TABL5 + CLOSEBRACES + COMMA;
+        getCellChild(objectCell, INDENT + TABL2 );
+        jsonSchemaIntruction += BREAKLINE + INDENT + TABL2 + CLOSEBRACES + COMMA;
 
         if (!listWithRequired.isEmpty()) {
-            jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired);
+            jsonSchemaIntruction += generateRequeredObjectsInstruction(listWithRequired, INDENT + TABL2);
         } else if (((Collection) objectCell.getValue()).getDisjunction()) {
-            jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell);
+            jsonSchemaIntruction += generateRequiredDisjunctionInstructions(objectCell, INDENT + TABL2);
         }
 
-        jsonSchemaIntruction += BREAKLINE  + TABL5 + "additionalProperties" + " : false" + COMMA
-                + BREAKLINE + TABL4 + CLOSEBRACES + COMMA;
+        jsonSchemaIntruction += BREAKLINE  + INDENT + TABL2 + "additionalProperties" + " : false" + COMMA
+                + BREAKLINE + INDENT + TAB + CLOSEBRACES + COMMA;
     }
 
     private String blockIdIntruction(mxICell objectCell) {
@@ -382,8 +378,8 @@ public class LogicalConversorToDocument {
         }
     }
 
-    private String generateRequeredObjectsInstruction(List<String> requiredList) {
-        String instruction = BREAKLINE + TABL3 + "required" + COLON + SPACE + "[";
+    private String generateRequeredObjectsInstruction(List<String> requiredList, String INDENT) {
+        String instruction = BREAKLINE + INDENT + "required" + COLON + SPACE + "[";
 
         for (int i = 0; i < listWithRequired.size(); i++) {
             if (i != listWithRequired.size() - 1) {
@@ -399,34 +395,6 @@ public class LogicalConversorToDocument {
         return instruction;
     }
 
-    public List<Object> generateObjectCellChildList(mxICell collectionCell) {
-        List<Object> childList = new ArrayList<Object>();
-
-        for (int i = 0; i < collectionCell.getChildCount(); i++) {
-            childList.add(collectionCell.getChildAt(i));
-        }
-
-        return childList;
-    }
-
-    private String generateColectionRequiredList(List<Object> list) {
-        String instruction = "";
-
-        for (Object child : list) {
-            if (((mxICell) child).getValue() instanceof DisjunctionObject) {
-                instruction += BREAKLINE +  "oneOf"  + " : [" + BREAKLINE;
-
-                for (Object disjunctionChild : ((DisjunctionObject) ((mxICell) child).getValue()).getChildList()) {
-                    instruction += OPENBRACES + QUOTATIONMARK + "required" + QUOTATIONMARK + " : [" + QUOTATIONMARK
-                            + disjunctionChild.toString() + QUOTATIONMARK + "]" + CLOSEBRACES + COMMA + BREAKLINE;
-                }
-                instruction += "]" + COMMA;
-            }
-        }
-
-        return instruction;
-    }
-
     private mxICell getLastChild(mxICell objectCell) {
         int lastChild = objectCell.getParent().getChildCount() - 1;
 
@@ -438,7 +406,7 @@ public class LogicalConversorToDocument {
         return objectCell.getParent().getChildAt(lastChild);
     }
 
-    private String generateRequiredDisjunctionInstructions(mxICell objectCell) {
+    private String generateRequiredDisjunctionInstructions(mxICell objectCell, String INDENT) {
         List<Object> collectionChild = new ArrayList<Object>();
         String instruction = "";
 
@@ -448,14 +416,14 @@ public class LogicalConversorToDocument {
 
         for (Object child : collectionChild) {
             if (((mxICell) child).getValue() instanceof DisjunctionObject) {
-                instruction += BREAKLINE + TABL3 + "oneOf" + " : [" + BREAKLINE;
+                instruction += BREAKLINE + INDENT + "oneOf" + " : [" + BREAKLINE;
 
                 for (Object disjunctionChild : ((DisjunctionObject) ((mxICell) child).getValue()).getChildList()) {
-                    instruction += TABL4 + OPENBRACES  + "required" + " : [" + QUOTATIONMARK
+                    instruction += INDENT + TAB + OPENBRACES  + "required" + " : [" + QUOTATIONMARK
                             + disjunctionChild.toString() + QUOTATIONMARK + "]" + CLOSEBRACES + COMMA + BREAKLINE;
                 }
 
-                instruction += TABL3 + "]" + COMMA;
+                instruction += INDENT + "]" + COMMA;
             }
         }
 

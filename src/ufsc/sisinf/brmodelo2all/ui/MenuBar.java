@@ -23,6 +23,7 @@ import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToPhysicalNoSQLA
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToMongoAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToCassandraAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ConvertLogicalToRedisAction;
+import ufsc.sisinf.brmodelo2all.ui.CommandActions.NosqlConfigurationAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.EntityPromotionAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.ExitAction;
 import ufsc.sisinf.brmodelo2all.ui.CommandActions.HistoryAction;
@@ -192,6 +193,8 @@ public class MenuBar extends JMenuBar {
 		menu.add(mainWindow.bind("Gerar modelagem para Mongo (Documento)", new ConvertLogicalToMongoAction()));
 		menu.add(mainWindow.bind("Gerar modelagem para Cassandra (Colunar)", new ConvertLogicalToCassandraAction()));
 		menu.add(mainWindow.bind("Gerar modelagem para Redis (Chave-Valor)", new ConvertLogicalToRedisAction()));
+		menu.addSeparator();
+		menu.add(mainWindow.bind("Configurações", new NosqlConfigurationAction()));
 	}
 
 	public void populateSelectionMenu(JMenu menu, final AppMainWindow mainWindow) {

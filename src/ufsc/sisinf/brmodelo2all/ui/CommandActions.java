@@ -1867,7 +1867,6 @@ public class CommandActions {
 			sqlEditor.setTitle(mxResources.get("nosqlEditorMongodb"));
 			mainWindow.getDesktop().add(sqlEditor, -1);
 			LogicalConversorToDocument documentConversor = new LogicalConversorToDocument(modelingComponent, sqlEditor);
-//			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
 			documentConversor.convertModeling();
 			mainWindow.openNoSqlEditor(sqlEditor);
 		}
@@ -1910,6 +1909,21 @@ public class CommandActions {
 			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
 			conversor.convertModeling();
 			mainWindow.openNoSqlEditor(sqlEditor);
+		}
+
+	}
+
+
+	@SuppressWarnings("serial")
+	public static class NosqlConfigurationAction extends AbstractAction {
+
+		/**
+		 *
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			AppMainWindow mainWindow = getEditor(e);
+			mainWindow.displayNosqlConvertOptions();
 		}
 
 	}

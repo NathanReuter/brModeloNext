@@ -72,7 +72,7 @@ public class AboutWindow extends JDialog {
 		panel.add(titleLabel, BorderLayout.NORTH);
 
 		// Adds optional subtitle
-		JLabel subtitleLabel = new JLabel("Para maiores informações visite https://code.google.com/p/brmodelonext/");
+		JLabel subtitleLabel = new JLabel("Para maiores informaï¿½ï¿½es visite https://code.google.com/p/brmodelonext/");
 		subtitleLabel.setBorder(BorderFactory.createEmptyBorder(4, 18, 0, 0));
 		subtitleLabel.setOpaque(false);
 		panel.add(subtitleLabel, BorderLayout.CENTER);
@@ -83,25 +83,25 @@ public class AboutWindow extends JDialog {
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-		content.add(new JLabel("brModelo2All - Modelagem Lógica/Conceitual descomplicada para todos"));
+		content.add(new JLabel("brModelo2All - Modelagem Lï¿½gica/Conceitual descomplicada para todos"));
 		content.add(new JLabel(" "));
 
-		content.add(new JLabel("Versão brModeloNext " + mxGraph.VERSION));
+		content.add(new JLabel("Versï¿½o brModeloNext " + mxGraph.VERSION));
 		content.add(new JLabel(" "));
 		content.add(new JLabel(" "));
 		content.add(new JLabel(" "));
 
 		try {
 			content.add(new JLabel("Sistema Operacional: " + System.getProperty("os.name")));
-			content.add(new JLabel("Versão do Sistema Operacional: " + System.getProperty("os.version")));
+			content.add(new JLabel("Versï¿½o do Sistema Operacional: " + System.getProperty("os.version")));
 			content.add(new JLabel(" "));
 
 			content.add(new JLabel("Java Vendor: " + System.getProperty("java.vendor", "undefined")));
 			content.add(new JLabel("Java Version: " + System.getProperty("java.version", "undefined")));
 			content.add(new JLabel(" "));
 
-			content.add(new JLabel("Memória Total: " + Runtime.getRuntime().totalMemory()));
-			content.add(new JLabel("Memória Livre: " + Runtime.getRuntime().freeMemory()));
+			content.add(new JLabel("Memï¿½ria Total: " + Runtime.getRuntime().totalMemory()));
+			content.add(new JLabel("Memï¿½ria Livre: " + Runtime.getRuntime().freeMemory()));
 			this.pack();
 		} catch (Exception e) {
 			// ignore
