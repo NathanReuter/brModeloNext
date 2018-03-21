@@ -24,6 +24,7 @@ import javax.swing.KeyStroke;
 
 import com.mxgraph.util.mxResources;
 import com.mxgraph.view.mxGraph;
+import ufsc.sisinf.brmodelo2all.control.NosqlConfigurationData;
 
 public class AboutWindow extends JDialog {
 

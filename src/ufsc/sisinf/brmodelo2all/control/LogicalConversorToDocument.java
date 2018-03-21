@@ -45,16 +45,17 @@ public class LogicalConversorToDocument {
 
     private final ModelingComponent logicalModelingComponent;
     private final NoSqlEditor sqlEditor;
+    private NosqlConfigurationData configData;
+    private List<String> listWithRequired = new ArrayList<String>();
+//    CodeBuilder KEYWORDS
     static final String SPACE = " ";
     static final String TAB = "  ";
     static final String TABL2 = TAB + TAB;
     static final String TABL3 = TABL2 + TAB;
     static final String TABL4 = TABL3 + TAB;
     static final String TABL5 = TABL4 + TAB;
-    static final String TABL6 = TABL5 + TAB;
     static final String COMMA = ", ";
     static final String SEMICOLON = ";";
-    static final String NOTNULL = "NOT NULL";
     static final String BREAKLINE = "\n";
     static final String OPENBRACES = "{";
     static final String CLOSEBRACES = "}";
@@ -67,7 +68,6 @@ public class LogicalConversorToDocument {
     static final String COLON = ":";
     static final String QUOTATIONMARK = mxResources.get("quotationMark");
     static final String SELECTDB = "use";
-    static final String TYPE = "type";
     static final String JSONSCHEMA = "$jsonSchema";
     static final String VALITATIONACTION = "validationAction";
     static final String VALIDATIONLEVEL = "validationLevel";
@@ -76,23 +76,31 @@ public class LogicalConversorToDocument {
     static final String TYPEOBJECTID = "objectId";
     static final String PROPERTIES = "properties";
     private String jsonSchemaIntruction = "";
-    private String mongoActionLevel = AppConstants.MONGO_DEFAULT_ACTION_LEVEL;
-    private String mongoValitationLevel = AppConstants.MONGO_DEFAULT_VALIDATION_LEVEL;
-    private List<String> listWithRequired = new ArrayList<String>();
-    private String path;
+    //    ConfigVariables
+    private String dbName;
+    private String mongoActionLevel;
+    private String mongoValitationLevel;
 
     public LogicalConversorToDocument(final ModelingComponent logicalModelingComponent, final NoSqlEditor sqlEditor) {
         this.logicalModelingComponent = logicalModelingComponent;
         this.sqlEditor = sqlEditor;
+        configData = NosqlConfigurationData.getInstance();
+    }
+
+    private void updateConfigVariables () {
+        dbName = configData.getDbName();
+        mongoActionLevel = configData.getMongoValidationActions().toLowerCase();
+        mongoValitationLevel = configData.getMongoValidationLevel().toLowerCase();
     }
 
     public void convertModeling() {
+        updateConfigVariables();
         mxRectangle rect = logicalModelingComponent.getGraph().getGraphBounds();
         int x = (int) rect.getX();
         int y = (int) rect.getY();
         Rectangle ret = new Rectangle(x + 60000, y + 60000);
         Object[] cells = logicalModelingComponent.getCells(ret);
-        String instruction = startDB("NovoDB");
+        String instruction = startDB(dbName);
 
         for (Object cell : cells) {
             if (cell instanceof mxCell) {

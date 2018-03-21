@@ -9,6 +9,7 @@ import javax.swing.*;
 
 import com.mxgraph.util.mxResources;
 import com.mxgraph.view.mxGraph;
+import ufsc.sisinf.brmodelo2all.control.NosqlConfigurationData;
 
 public class NosqlConfigWindow extends JDialog {
 
@@ -16,12 +17,13 @@ public class NosqlConfigWindow extends JDialog {
      *
      */
     private static final long serialVersionUID = -3378029138434324390L;
-
+    private NosqlConfigurationData configData;
     /**
      *
      */
     public NosqlConfigWindow(Frame owner) {
         super(owner);
+        configData = NosqlConfigurationData.getInstance();
         setTitle(mxResources.get("aboutGraphEditor"));
         setLayout(new BorderLayout());
 
@@ -57,8 +59,8 @@ public class NosqlConfigWindow extends JDialog {
         getContentPane().add(panel, BorderLayout.NORTH);
 
         JPanel content = new JPanel();
-        JTextField editTextArea = new JTextField("");
-        editTextArea.setSize(100, 100);
+        JTextField dbNameTextArea = new JTextField(configData.getDbName());
+        dbNameTextArea.setSize(100, 100);
         JLabel geralSectionTitle = new JLabel("Geral");
         geralSectionTitle.setFont(geralSectionTitle.getFont().deriveFont(Font.BOLD));
         content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
@@ -67,7 +69,7 @@ public class NosqlConfigWindow extends JDialog {
         JPanel dbNamePanel = new JPanel();
         dbNamePanel.setLayout(new BoxLayout(dbNamePanel, BoxLayout.LINE_AXIS));
         dbNamePanel.add(new JLabel("Nome do Banco: "));
-        dbNamePanel.add(editTextArea);
+        dbNamePanel.add(dbNameTextArea);
         content.add(new JLabel(" "));
         content.add(dbNamePanel);
         content.add(new JSeparator(SwingConstants.HORIZONTAL));
@@ -79,22 +81,30 @@ public class NosqlConfigWindow extends JDialog {
 
 //      Mongo validationLevel
         JPanel mongoValidationLevelPainel = new JPanel();
-        JRadioButton moderate = new JRadioButton("Moderate", false);
-        JRadioButton strict = new JRadioButton("Strict", true);
+        JRadioButton moderate = new JRadioButton("Moderate", configData.getMongoValidationLevel() == "MODERATE");
+        JRadioButton strict = new JRadioButton("Strict", configData.getMongoValidationLevel() == "STRICT");
+        moderate.setActionCommand("MODERATE");
+        strict.setActionCommand("STRICT");
+        ButtonGroup validationLevelGroup = new ButtonGroup();
+        validationLevelGroup.add(moderate);
+        validationLevelGroup.add(strict);
         mongoValidationLevelPainel.add(new JLabel("Nivel de Validação: "));
         mongoValidationLevelPainel.add(moderate);
         mongoValidationLevelPainel.add(strict);
         content.add(mongoValidationLevelPainel);
 //        Mongo Validation Action
         JPanel mongoValidationActionPainel = new JPanel();
-        JRadioButton warning = new JRadioButton("Warning", false);
-        JRadioButton error = new JRadioButton("Error", true);
+        JRadioButton warning = new JRadioButton("Warning",  configData.getMongoValidationActions() == "WARNING");
+        JRadioButton error = new JRadioButton("Error", configData.getMongoValidationActions() == "ERROR");
+        warning.setActionCommand("WARNING");
+        error.setActionCommand("ERROR");
+        ButtonGroup validationActionGroup = new ButtonGroup();
+        validationActionGroup.add(warning);
+        validationActionGroup.add(error);
         mongoValidationActionPainel.add(new JLabel("Ação de Validação: "));
         mongoValidationActionPainel.add(warning);
         mongoValidationActionPainel.add(error);
         content.add(mongoValidationActionPainel);
-
-
 
         getContentPane().add(content, BorderLayout.CENTER);
 
@@ -107,7 +117,9 @@ public class NosqlConfigWindow extends JDialog {
 
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Ok");
+                configData.setDbName(dbNameTextArea.getText());
+                configData.setMongoValidationActions(validationActionGroup.getSelection().getActionCommand());
+                configData.setMongoValidationLevel(validationLevelGroup.getSelection().getActionCommand());
                 setVisible(false);
             }
         });
@@ -123,7 +135,7 @@ public class NosqlConfigWindow extends JDialog {
         buttonPanel.add(closeButton);
 
         // Sets default button for enter key
-        getRootPane().setDefaultButton(closeButton);
+        getRootPane().setDefaultButton(applyButton);
 
         setResizable(true);
         setSize(400, 400);
