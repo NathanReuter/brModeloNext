@@ -13,4 +13,8 @@ public class AppConstants {
 	public static final String MONGO_DEFAULT_ACTION_LEVEL = "ERROR";
 
 	public static final String dbName = "NovoDB";
+
+	public static final String CASSANDRA_DEFAULT_CLASS = "SimpleStrategy";
+
+	public static final String CASSANDRA_DEFAULT_REPLICATION_FACTOR = "3";
 }

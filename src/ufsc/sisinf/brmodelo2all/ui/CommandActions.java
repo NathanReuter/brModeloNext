@@ -58,6 +58,7 @@ import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.view.mxGraph;
 
 import ufsc.sisinf.brmodelo2all.control.*;
+import ufsc.sisinf.brmodelo2all.control.CassandraConversor.LogicalToCassandraConversor;
 import ufsc.sisinf.brmodelo2all.model.Modeling;
 import ufsc.sisinf.brmodelo2all.model.ModelingComponent;
 import ufsc.sisinf.brmodelo2all.model.objects.AssociativeEntityObject;
@@ -1884,10 +1885,10 @@ public class CommandActions {
 			AppMainWindow mainWindow = getEditor(e);
 			ModelingComponent modelingComponent = getModelingComponent(e);
 			NoSqlEditor sqlEditor = new NoSqlEditor();
-			sqlEditor.setTitle(mxResources.get("nosqlEditor"));
+			sqlEditor.setTitle(mxResources.get("nosqlEditorCassandra"));
 			mainWindow.getDesktop().add(sqlEditor, -1);
-			LogicalConversorToNoSQL conversor = new LogicalConversorToNoSQL(modelingComponent, sqlEditor);
-			conversor.convertModeling();
+			LogicalToCassandraConversor cassandraConversor = new LogicalToCassandraConversor(modelingComponent, sqlEditor);
+			cassandraConversor.convertModeling();
 			mainWindow.openNoSqlEditor(sqlEditor);
 		}
 

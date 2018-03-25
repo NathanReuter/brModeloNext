@@ -13,11 +13,15 @@ public class NosqlConfigurationData {
     private enum  mongoValidationActions {WARNING, ERROR};
     private mongoValidationLevels  mongoLevel;
     private mongoValidationActions  mongoAction;
+    private String cassandraClass;
+    private String cassandraReplicationFactor;
 
     private NosqlConfigurationData() {
         dbName = AppConstants.dbName;
         mongoLevel = mongoValidationLevels.valueOf(AppConstants.MONGO_DEFAULT_VALIDATION_LEVEL);
         mongoAction = mongoValidationActions.valueOf(AppConstants.MONGO_DEFAULT_ACTION_LEVEL);
+        cassandraClass = AppConstants.CASSANDRA_DEFAULT_CLASS;
+        cassandraReplicationFactor = AppConstants.CASSANDRA_DEFAULT_REPLICATION_FACTOR;
     }
 
     public void setDbName (String name) {
@@ -42,5 +46,13 @@ public class NosqlConfigurationData {
 
     public String getMongoValidationActions() {
         return mongoAction.toString();
+    }
+
+    public String getCassandraClass() {
+        return cassandraClass;
+    }
+
+    public String getCassandraReplicationFactor() {
+        return cassandraReplicationFactor;
     }
 }

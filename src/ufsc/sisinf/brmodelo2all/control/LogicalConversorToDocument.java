@@ -56,6 +56,7 @@ public class LogicalConversorToDocument {
     static final String TABL5 = TABL4 + TAB;
     static final String COMMA = ", ";
     static final String SEMICOLON = ";";
+    static final String COLON = ":";
     static final String BREAKLINE = "\n";
     static final String OPENBRACES = "{";
     static final String CLOSEBRACES = "}";
@@ -65,7 +66,6 @@ public class LogicalConversorToDocument {
     static final String CLOSEBRACKTS = "]";
     static final String CREATECOLLECTIONCOMMAND = "db.createCollection";
     static final String VALIDATOR = "validator";
-    static final String COLON = ":";
     static final String QUOTATIONMARK = mxResources.get("quotationMark");
     static final String SELECTDB = "use";
     static final String JSONSCHEMA = "$jsonSchema";
