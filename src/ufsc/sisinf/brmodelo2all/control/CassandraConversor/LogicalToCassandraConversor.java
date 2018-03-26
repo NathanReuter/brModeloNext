@@ -18,6 +18,7 @@ public class LogicalToCassandraConversor {
     private NoSqlEditor sqlEditor;
     private NosqlConfigurationData configData;
     private CassandraInstructionsBuilder instructionsBuilder;
+    private enum TableType {TABLE, NEWTYPE};
 
     public LogicalToCassandraConversor(final ModelingComponent logicalModelingComponent, final NoSqlEditor sqlEditor) {
         this.logicalModelingComponent = logicalModelingComponent;
@@ -51,17 +52,28 @@ public class LogicalToCassandraConversor {
         for (Object cell : cells) {
             if (cell instanceof mxCell) {
                 mxCell objectCell = (mxCell) cell;
-                instructions += verifyCellObjects(objectCell);
+                instructions += verifyCellObjects(objectCell, TableType.TABLE);
             }
         }
 
         sqlEditor.insertSqlInstruction(instructions);
     }
 
+    private boolean collectionsHasIdentifier (mxICell collection) {
+        if (collection.getChildCount() > 0) {
+            for (mxICell children : getCellChild(collection)) {
+                if (children.getValue() instanceof NoSqlAttributeObject) {
+                    if (((NoSqlAttributeObject) children.getValue()).isIdentifierAttribute()) {
+                        return true;
+                    }
+                }
+            }
+        }
 
+        return false;
+    }
 
-    public String verifyCellObjects(mxCell objectCell) {
-        System.out.println(objectCell.getValue());
+    public String verifyCellObjects(mxCell objectCell, TableType tableType) {
         String instructions = "";
         CassandraObjectData cassandraObjectData = new CassandraObjectData();
 
@@ -69,11 +81,20 @@ public class LogicalToCassandraConversor {
             for (mxICell childrenCell : getCellChild(objectCell)) {
                 if (childrenCell.getValue() instanceof Collection ||
                         childrenCell.getValue() instanceof DisjunctionObject) {
-                    instructions += verifyCellObjects((mxCell) childrenCell);
+                    if (collectionsHasIdentifier(childrenCell)) {
+                        instructions += verifyCellObjects((mxCell) childrenCell, tableType.TABLE);
+                    } else {
+                        instructions += verifyCellObjects((mxCell) childrenCell, tableType.NEWTYPE);
+                    }
                 } else if (childrenCell.getValue() instanceof NoSqlAttributeObject) {
                     NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) childrenCell.getValue();
                     String attributeName = childrenCell.getValue().toString();
                     String attributeType = attributeObject.getType();
+
+                    if (attributeObject.isIdentifierAttribute()) {
+                        attributeName = "id";
+                        cassandraObjectData.setPrimaryKey(attributeName);
+                    }
 
                     cassandraObjectData.addAttributes(new CassandraAttribute(attributeName,
                             CassandraAttribute.typeConverter(attributeType)));
@@ -83,9 +104,12 @@ public class LogicalToCassandraConversor {
 
         if (objectCell.getValue() instanceof Collection) {
             cassandraObjectData.setObjectName(((Collection) objectCell.getValue()).getName());
-            instructions += instructionsBuilder.genTablesInstructions(cassandraObjectData);
-        } else if (objectCell.getValue() instanceof NoSqlAttributeObject) {
 
+            if (tableType.equals(TableType.TABLE)) {
+                instructions += instructionsBuilder.genTablesInstructions(cassandraObjectData);
+            } else {
+                instructions += instructionsBuilder.genTypeInstructions(cassandraObjectData);
+            }
         }
 
         return instructions;

@@ -19,6 +19,8 @@ public class CassandraInstructionsBuilder {
     static final String USE = "use";
     static final String TABLE = "TABLE";
     static final String TYPE = "TYPE";
+    static final String PRIMARY = "PRIMARY";
+    static final String KEY = "KEY";
 
     /* Language Tokens*/
     static final String COMMA = ", ";
@@ -73,14 +75,20 @@ public class CassandraInstructionsBuilder {
         return instructions;
     }
 
+    public String genPrimaryKey(String key) {
+        return key != null ? PRIMARY + SPACE + KEY + SPACE + OPENPARENTHESES + key + CLOSEPARENTHESES : "";
+    }
+
     public String genTablesInstructions (CassandraObjectData data) {
         return CREATE + SPACE + TABLE + SPACE + data.getObjectName() + SPACE + OPENPARENTHESES
                 + BREAKLINE + genAttributesInstructions(data.getAttributes())
+                + TAB + genPrimaryKey(data.getPrimaryKey())
                 + BREAKLINE + CLOSEPARENTHESES + SEMICOLON + BREAKLINE;
     }
 
-    public String genTypeInstructions () {
-        return CREATE + SPACE + TYPE + SPACE + "tablename" + SPACE + OPENPARENTHESES
+    public String genTypeInstructions (CassandraObjectData data) {
+        return CREATE + SPACE + TYPE + SPACE + data.getObjectName() + SPACE + OPENPARENTHESES
+                + BREAKLINE + genAttributesInstructions(data.getAttributes())
                 + BREAKLINE + CLOSEPARENTHESES + SEMICOLON + BREAKLINE;
     }
 }
