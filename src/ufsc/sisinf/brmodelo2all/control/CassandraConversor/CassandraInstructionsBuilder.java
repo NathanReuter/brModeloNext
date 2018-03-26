@@ -21,6 +21,7 @@ public class CassandraInstructionsBuilder {
     static final String TYPE = "TYPE";
     static final String PRIMARY = "PRIMARY";
     static final String KEY = "KEY";
+    static final String LIST = "list";
 
     /* Language Tokens*/
     static final String COMMA = ", ";
@@ -33,6 +34,8 @@ public class CassandraInstructionsBuilder {
     static final String CLOSEPARENTHESES = ")";
     static final String OPENBRACKETS = "[";
     static final String CLOSEBRACKTS = "]";
+    static final String OPENCHEVRON = "<";
+    static final String CLOSECHEVRON = ">";
     static final String SPACE = " ";
     static final String EQUAL = "=";
     static final String ONEQUOTE = "'";
@@ -54,6 +57,9 @@ public class CassandraInstructionsBuilder {
     private String surroundWithQuotes(String word) {
         return ONEQUOTE + word + ONEQUOTE;
     }
+    private String surroundWithChevron(String word) {
+        return OPENCHEVRON + word + CLOSECHEVRON;
+    }
 
     public String genInitialDBInstructions () {
         return DROP + SPACE + KEYSPACE + SPACE + dbName + SEMICOLON + BREAKLINE
@@ -65,11 +71,23 @@ public class CassandraInstructionsBuilder {
                 + USE + SPACE + dbName + SEMICOLON + BREAKLINE + BREAKLINE;
     }
 
+    public String getAttributeType (CassandraAttribute attribute) {
+        if (attribute.getType().equals(CassandraAttribute.CassandraTypes.NEWTYPE)) {
+            return attribute.getName().toUpperCase();
+        }
+
+        return attribute.getType().toString();
+    }
+
     public String genAttributesInstructions (List<CassandraAttribute> attributes) {
         String instructions = "";
 
         for (CassandraAttribute attribute : attributes) {
-            instructions += TAB + attribute.getName() + SPACE + attribute.getType() + COMMA + BREAKLINE;
+            if (attribute.isMultipleAttributes()) {
+                instructions += TAB + attribute.getName() + SPACE + LIST + surroundWithChevron(getAttributeType(attribute)) + COMMA + BREAKLINE;
+            } else {
+                instructions += TAB + attribute.getName() + SPACE + getAttributeType(attribute) + COMMA + BREAKLINE;
+            }
         }
 
         return instructions;
@@ -87,7 +105,7 @@ public class CassandraInstructionsBuilder {
     }
 
     public String genTypeInstructions (CassandraObjectData data) {
-        return CREATE + SPACE + TYPE + SPACE + data.getObjectName() + SPACE + OPENPARENTHESES
+        return CREATE + SPACE + TYPE + SPACE + data.getObjectName().toUpperCase() + SPACE + OPENPARENTHESES
                 + BREAKLINE + genAttributesInstructions(data.getAttributes())
                 + BREAKLINE + CLOSEPARENTHESES + SEMICOLON + BREAKLINE;
     }

@@ -4,11 +4,13 @@ public class CassandraAttribute {
 
     private String name;
     private CassandraTypes  type;
-    public enum CassandraTypes {UUID, TIMESTAMP, TEXT, INT}
+    private boolean multipleAttributes;
+    public enum CassandraTypes {UUID, TIMESTAMP, TEXT, INT, NEWTYPE}
 
-    public CassandraAttribute (String name, CassandraTypes type) {
+    public CassandraAttribute (String name, CassandraTypes type, Boolean multipleAttributes) {
         this.name = name;
         this.type = type;
+        this.multipleAttributes = multipleAttributes;
     }
 
     public static CassandraTypes typeConverter (String type) {
@@ -36,6 +38,10 @@ public class CassandraAttribute {
 
     public CassandraTypes getType() {
         return type;
+    }
+
+    public boolean isMultipleAttributes() {
+        return multipleAttributes;
     }
 
 }

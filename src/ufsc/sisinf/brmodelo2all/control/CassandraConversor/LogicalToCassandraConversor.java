@@ -73,31 +73,45 @@ public class LogicalToCassandraConversor {
         return false;
     }
 
+    private void configCassandraAttributes (NoSqlAttributeObject attributeObject, CassandraObjectData cassandraObjectData) {
+        String attributeName = attributeObject.getName();
+        String attributeType = attributeObject.getType();
+
+        if (attributeObject.isIdentifierAttribute()) {
+            attributeType = "id";
+            cassandraObjectData.setPrimaryKey(attributeName);
+        } else if (attributeObject.isReferenceAttribute()) {
+            attributeType = "id";
+        }
+
+        cassandraObjectData.addAttributes(new CassandraAttribute(attributeName,
+                CassandraAttribute.typeConverter(attributeType),
+                hashMultipleCardinalities(null, attributeObject)));
+    }
+
+    public boolean hashMultipleCardinalities (Collection collectionObject, NoSqlAttributeObject attributeObject) {
+        return (collectionObject != null && collectionObject.getMaximumCardinality() != 49)
+                || (attributeObject != null && attributeObject.getMaximumCardinality() != 49);
+    }
+
     public String verifyCellObjects(mxCell objectCell, TableType tableType) {
         String instructions = "";
         CassandraObjectData cassandraObjectData = new CassandraObjectData();
 
         if (objectCell.getChildCount() > 0) {
             for (mxICell childrenCell : getCellChild(objectCell)) {
-                if (childrenCell.getValue() instanceof Collection ||
-                        childrenCell.getValue() instanceof DisjunctionObject) {
+                if (childrenCell.getValue() instanceof Collection) {
                     if (collectionsHasIdentifier(childrenCell)) {
                         instructions += verifyCellObjects((mxCell) childrenCell, tableType.TABLE);
                     } else {
+                        Collection collection = (Collection) childrenCell.getValue();
+                        cassandraObjectData.addAttributes(new CassandraAttribute(collection.getName(),
+                                CassandraAttribute.CassandraTypes.NEWTYPE,
+                                hashMultipleCardinalities(collection, null)));
                         instructions += verifyCellObjects((mxCell) childrenCell, tableType.NEWTYPE);
                     }
                 } else if (childrenCell.getValue() instanceof NoSqlAttributeObject) {
-                    NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) childrenCell.getValue();
-                    String attributeName = childrenCell.getValue().toString();
-                    String attributeType = attributeObject.getType();
-
-                    if (attributeObject.isIdentifierAttribute()) {
-                        attributeName = "id";
-                        cassandraObjectData.setPrimaryKey(attributeName);
-                    }
-
-                    cassandraObjectData.addAttributes(new CassandraAttribute(attributeName,
-                            CassandraAttribute.typeConverter(attributeType)));
+                    configCassandraAttributes((NoSqlAttributeObject) childrenCell.getValue(), cassandraObjectData);
                 }
             }
         }
