@@ -94,6 +94,8 @@ public class LogicalToCassandraConversor {
                 || (attributeObject != null && attributeObject.getMaximumCardinality() != 49);
     }
 
+    /* Disjunction cases can't be modeled in cassandra collum type or required statements*/
+
     public String verifyCellObjects(mxCell objectCell, TableType tableType) {
         String instructions = "";
         CassandraObjectData cassandraObjectData = new CassandraObjectData();

@@ -72,14 +72,14 @@ public class NosqlConfigWindow extends JDialog {
         dbNamePanel.add(dbNameTextArea);
         content.add(new JLabel(" "));
         content.add(dbNamePanel);
+        /* Mongo section */
         content.add(new JSeparator(SwingConstants.HORIZONTAL));
         content.add(new JLabel(" "));
         JLabel mongoSectionTitle = new JLabel("Mongo");
         mongoSectionTitle.setFont(mongoSectionTitle.getFont().deriveFont(Font.BOLD));
         content.add(new JLabel(" "));
         content.add(mongoSectionTitle);
-
-//      Mongo validationLevel
+        /* Mongo validationLevel*/
         JPanel mongoValidationLevelPainel = new JPanel();
         JRadioButton moderate = new JRadioButton("Moderate", configData.getMongoValidationLevel() == "MODERATE");
         JRadioButton strict = new JRadioButton("Strict", configData.getMongoValidationLevel() == "STRICT");
@@ -92,7 +92,7 @@ public class NosqlConfigWindow extends JDialog {
         mongoValidationLevelPainel.add(moderate);
         mongoValidationLevelPainel.add(strict);
         content.add(mongoValidationLevelPainel);
-//        Mongo Validation Action
+        /*Mongo Validation Action*/
         JPanel mongoValidationActionPainel = new JPanel();
         JRadioButton warning = new JRadioButton("Warning",  configData.getMongoValidationActions() == "WARNING");
         JRadioButton error = new JRadioButton("Error", configData.getMongoValidationActions() == "ERROR");
@@ -106,7 +106,34 @@ public class NosqlConfigWindow extends JDialog {
         mongoValidationActionPainel.add(error);
         content.add(mongoValidationActionPainel);
 
+        /* Cassandra Section */
+        content.add(new JSeparator(SwingConstants.HORIZONTAL));
+        content.add(new JLabel(" "));
+        JLabel cassandraSectionTitle = new JLabel("Cassandra");
+        cassandraSectionTitle.setFont(mongoSectionTitle.getFont().deriveFont(Font.BOLD));
+        mongoSectionTitle.setFont(mongoSectionTitle.getFont().deriveFont(Font.BOLD));
+        content.add(new JLabel(" "));
+        content.add(cassandraSectionTitle);
         getContentPane().add(content, BorderLayout.CENTER);
+        /* Cassandra Strategy*/
+        JPanel cassandraStrategyPainel = new JPanel();
+        JRadioButton cassandraSimpleStrategy = new JRadioButton("Simple",  configData.getCassandraStrategy() == "SimpleStrategy");
+        JRadioButton cassandraNetworkTopologyStrategy = new JRadioButton("Network Topology", configData.getCassandraStrategy() == "NetworkTopologyStrategy");
+        cassandraSimpleStrategy.setActionCommand("SimpleStrategy");
+        cassandraNetworkTopologyStrategy.setActionCommand("NetworkTopologyStrategy");
+        ButtonGroup cassandraStrategyButtonGroup = new ButtonGroup();
+        cassandraStrategyButtonGroup.add(cassandraSimpleStrategy);
+        cassandraStrategyButtonGroup.add(cassandraNetworkTopologyStrategy);
+        mongoValidationActionPainel.add(new JLabel("Estratégia de Replicação: "));
+        cassandraStrategyPainel.add(cassandraSimpleStrategy);
+        cassandraStrategyPainel.add(cassandraNetworkTopologyStrategy);
+        content.add(cassandraStrategyPainel);
+
+        JPanel cassandraReplicationFactorPanel = new JPanel();
+        JTextField cassandraReplicationFactorTextField = new JTextField(configData.getCassandraReplicationFactor() + "  ");
+        cassandraReplicationFactorPanel.add(new JLabel("Fator de Replicação: "));
+        cassandraReplicationFactorPanel.add(cassandraReplicationFactorTextField);
+        content.add(cassandraReplicationFactorPanel);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -120,6 +147,8 @@ public class NosqlConfigWindow extends JDialog {
                 configData.setDbName(dbNameTextArea.getText());
                 configData.setMongoValidationActions(validationActionGroup.getSelection().getActionCommand());
                 configData.setMongoValidationLevel(validationLevelGroup.getSelection().getActionCommand());
+                configData.setCassandraStrategy(cassandraStrategyButtonGroup.getSelection().getActionCommand());
+                configData.setCassandraReplicationFactor(cassandraReplicationFactorTextField.getText().trim());
                 setVisible(false);
             }
         });
@@ -138,7 +167,7 @@ public class NosqlConfigWindow extends JDialog {
         getRootPane().setDefaultButton(applyButton);
 
         setResizable(true);
-        setSize(400, 400);
+        setSize(400, 475);
     }
 
     /**

@@ -189,12 +189,14 @@ public class MenuBar extends JMenuBar {
 	}
 
 	private void populateNoSQLConvertionMenu(JMenu menu, AppMainWindow mainWindow) {
-		menu.add(mainWindow.bind(mxResources.get("nosql"), new ConvertLogicalToPhysicalNoSQLAction()));
-		menu.add(mainWindow.bind("Gerar modelagem para Mongo (Documento)", new ConvertLogicalToMongoAction()));
-		menu.add(mainWindow.bind("Gerar modelagem para Cassandra (Colunar)", new ConvertLogicalToCassandraAction()));
+		menu.add(mainWindow.bind("Gerar modelagem para Mongo (Documento)", new ConvertLogicalToMongoAction(),
+				"/ufsc/sisinf/brmodelo2all/ui/images/menu/mongoicon.png"));
+		menu.add(mainWindow.bind("Gerar modelagem para Cassandra (Colunar)", new ConvertLogicalToCassandraAction(),
+				"/ufsc/sisinf/brmodelo2all/ui/images/menu/cassandraicon.png"));
 		menu.add(mainWindow.bind("Gerar modelagem para Redis (Chave-Valor)", new ConvertLogicalToRedisAction()));
 		menu.addSeparator();
-		menu.add(mainWindow.bind("Configurações", new NosqlConfigurationAction()));
+		menu.add(mainWindow.bind("Configurações", new NosqlConfigurationAction(),
+				"/ufsc/sisinf/brmodelo2all/ui/images/menu/cog.png"));
 	}
 
 	public void populateSelectionMenu(JMenu menu, final AppMainWindow mainWindow) {

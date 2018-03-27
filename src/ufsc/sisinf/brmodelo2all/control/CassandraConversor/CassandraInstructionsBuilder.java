@@ -50,7 +50,7 @@ public class CassandraInstructionsBuilder {
     public CassandraInstructionsBuilder() {
         this.configData = NosqlConfigurationData.getInstance();
         dbName = configData.getDbName();
-        cassandraClass = configData.getCassandraClass();
+        cassandraClass = configData.getCassandraStrategy();
         cassandraReplicationFactor = configData.getCassandraReplicationFactor();
     }
 

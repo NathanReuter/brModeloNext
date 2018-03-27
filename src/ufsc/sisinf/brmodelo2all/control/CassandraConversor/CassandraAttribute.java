@@ -36,6 +36,7 @@ public class CassandraAttribute {
         return name;
     }
 
+//    TODO MAKE THE NEWTYPE LÓGIC HERE
     public CassandraTypes getType() {
         return type;
     }
