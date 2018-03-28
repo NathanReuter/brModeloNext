@@ -2,6 +2,7 @@ package ufsc.sisinf.brmodelo2all.control.CassandraConversor;
 
 
 import ufsc.sisinf.brmodelo2all.control.NosqlConfigurationData;
+import ufsc.sisinf.brmodelo2all.util.AppConstants;
 
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class CassandraInstructionsBuilder {
     static final String PRIMARY = "PRIMARY";
     static final String KEY = "KEY";
     static final String LIST = "list";
+    static final String FROZEN = "frozen";
+    static final String IFNOTEXISTS = "IF NOT EXISTS";
 
     /* Language Tokens*/
     static final String COMMA = ", ";
@@ -39,6 +42,7 @@ public class CassandraInstructionsBuilder {
     static final String SPACE = " ";
     static final String EQUAL = "=";
     static final String ONEQUOTE = "'";
+    static final String DOUBLEQUOTE = "\"";
     static final String TAB = "  ";
 
 
@@ -62,21 +66,25 @@ public class CassandraInstructionsBuilder {
     }
 
     public String genInitialDBInstructions () {
-        return DROP + SPACE + KEYSPACE + SPACE + dbName + SEMICOLON + BREAKLINE
-                + CREATE + SPACE + KEYSPACE + SPACE + dbName + SPACE + WITH + SPACE + REPLICATION + SPACE +  EQUAL + SPACE
-                + OPENBRACES
-                    + surroundWithQuotes(CLASS) + COLON + SPACE + surroundWithQuotes(cassandraClass) + COMMA
-                    + surroundWithQuotes(REPLICATIONFACTOR) + COLON + surroundWithQuotes(cassandraReplicationFactor)
-                + CLOSEBRACES + SEMICOLON + BREAKLINE
+        return AppConstants.CASSANDRA_HELP_INSTRUCTIONS + BREAKLINE
+                + BREAKLINE + CREATE + SPACE + KEYSPACE + SPACE + IFNOTEXISTS + SPACE + dbName + SPACE + WITH + SPACE + REPLICATION + SPACE +  EQUAL + SPACE
+                + OPENBRACES + BREAKLINE
+                    + TAB + surroundWithQuotes(CLASS) + COLON + SPACE + surroundWithQuotes(cassandraClass) + COMMA
+                    + BREAKLINE + TAB + surroundWithQuotes(REPLICATIONFACTOR) + COLON + surroundWithQuotes(cassandraReplicationFactor)
+                + BREAKLINE + CLOSEBRACES + SEMICOLON + BREAKLINE
                 + USE + SPACE + dbName + SEMICOLON + BREAKLINE + BREAKLINE;
     }
 
-    public String getAttributeType (CassandraAttribute attribute) {
+    public String getAttributeType (CassandraAttribute attribute, boolean isList) {
         if (attribute.getType().equals(CassandraAttribute.CassandraTypes.NEWTYPE)) {
-            return attribute.getName().toUpperCase();
+            return isList ? addFrozenToken(attribute.getName().toUpperCase()): attribute.getName().toUpperCase();
         }
 
         return attribute.getType().toString();
+    }
+
+    public String addFrozenToken (String word) {
+        return FROZEN + SPACE + surroundWithChevron(word);
     }
 
     public String genAttributesInstructions (List<CassandraAttribute> attributes) {
@@ -84,9 +92,10 @@ public class CassandraInstructionsBuilder {
 
         for (CassandraAttribute attribute : attributes) {
             if (attribute.isMultipleAttributes()) {
-                instructions += TAB + attribute.getName() + SPACE + LIST + surroundWithChevron(getAttributeType(attribute)) + COMMA + BREAKLINE;
+                instructions += TAB + attribute.getName() + SPACE + LIST
+                        + surroundWithChevron(getAttributeType(attribute, true)) + COMMA + BREAKLINE;
             } else {
-                instructions += TAB + attribute.getName() + SPACE + getAttributeType(attribute) + COMMA + BREAKLINE;
+                instructions += TAB + attribute.getName() + SPACE + getAttributeType(attribute, false) + COMMA + BREAKLINE;
             }
         }
 
