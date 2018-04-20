@@ -106,6 +106,10 @@ public class PropertiesWindow extends JDialog {
 			int fieldIndex) {
 		boolean usesCaption = true;
 		JComponent field;
+
+		if (name.equals("Tipo")) {
+			type = AppConstants.COMBO_BOX;
+		}
 		switch (type) {
 		case AppConstants.TEXT_FIELD:
 			JTextField text = new JTextField(value, 10);
@@ -210,6 +214,9 @@ public class PropertiesWindow extends JDialog {
 
 		String newValues[] = new String[count];
 		for (int i = 0; i < count; i++) {
+			if (fieldsNames[i].equals("Tipo")) {
+				fieldsTypes[i] = AppConstants.COMBO_BOX;
+			}
 
 			switch (fieldsTypes[i]) {
 			case AppConstants.TEXT_FIELD:

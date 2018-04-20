@@ -6,7 +6,6 @@ import com.mxgraph.util.mxRectangle;
 import ufsc.sisinf.brmodelo2all.control.NosqlConfigurationData;
 import ufsc.sisinf.brmodelo2all.model.ModelingComponent;
 import ufsc.sisinf.brmodelo2all.model.objects.Collection;
-import ufsc.sisinf.brmodelo2all.model.objects.DisjunctionObject;
 import ufsc.sisinf.brmodelo2all.model.objects.NoSqlAttributeObject;
 import ufsc.sisinf.brmodelo2all.ui.NoSqlEditor;
 

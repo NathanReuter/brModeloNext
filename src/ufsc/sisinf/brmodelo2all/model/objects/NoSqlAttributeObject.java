@@ -2,6 +2,7 @@ package ufsc.sisinf.brmodelo2all.model.objects;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -12,6 +13,7 @@ import javax.swing.JPanel;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.util.mxResources;
+import ufsc.sisinf.brmodelo2all.util.AppConstants;
 
 public class NoSqlAttributeObject extends ModelingObject {
 	private boolean identifierAttribute = false;
@@ -181,6 +183,18 @@ public class NoSqlAttributeObject extends ModelingObject {
 		if (mxResources.get("maximumCardinality") == name) {
 			String[] values = { "n", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
 					"16", "17", "18", "19", "20" };
+			return values;
+		}
+
+		if (name.equals("Tipo")) {
+			ArrayList<String> listValues = new ArrayList<String>();
+
+			for (AppConstants.JSON_SCHEMA_TYPES type : AppConstants.JSON_SCHEMA_TYPES.values()) {
+				listValues.add(type.toString());
+			}
+
+			String[] values = new String[listValues.size()];
+			values = listValues.toArray(values);
 			return values;
 		}
 		return null;

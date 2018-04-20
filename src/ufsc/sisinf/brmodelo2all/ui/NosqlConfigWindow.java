@@ -105,7 +105,12 @@ public class NosqlConfigWindow extends JDialog {
         mongoValidationActionPainel.add(warning);
         mongoValidationActionPainel.add(error);
         content.add(mongoValidationActionPainel);
-
+        /*Make unique collection*/
+        JPanel uniqueCollecitonPanel = new JPanel();
+        JCheckBox uniqueCollectionCheckbox = new JCheckBox("Gerar esquema com uma única coleção");
+        uniqueCollectionCheckbox.setSelected(configData.isMongoIsUniqueCollection());
+        uniqueCollecitonPanel.add(uniqueCollectionCheckbox);
+        content.add(uniqueCollecitonPanel);
         /* Cassandra Section */
         content.add(new JSeparator(SwingConstants.HORIZONTAL));
         content.add(new JLabel(" "));
@@ -149,6 +154,7 @@ public class NosqlConfigWindow extends JDialog {
                 configData.setMongoValidationLevel(validationLevelGroup.getSelection().getActionCommand());
                 configData.setCassandraStrategy(cassandraStrategyButtonGroup.getSelection().getActionCommand());
                 configData.setCassandraReplicationFactor(cassandraReplicationFactorTextField.getText().trim());
+                configData.setMongoIsUniqueCollection(uniqueCollectionCheckbox.isSelected());
                 setVisible(false);
             }
         });
@@ -167,7 +173,7 @@ public class NosqlConfigWindow extends JDialog {
         getRootPane().setDefaultButton(applyButton);
 
         setResizable(true);
-        setSize(400, 475);
+        setSize(400, 485);
     }
 
     /**

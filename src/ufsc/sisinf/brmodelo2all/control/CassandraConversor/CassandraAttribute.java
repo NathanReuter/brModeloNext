@@ -5,7 +5,7 @@ public class CassandraAttribute {
     private String name;
     private CassandraTypes  type;
     private boolean multipleAttributes;
-    public enum CassandraTypes {UUID, TIMESTAMP, TEXT, INT, NEWTYPE}
+    public enum CassandraTypes {UUID, TIMESTAMP, TEXT, INT, NEWTYPE, BOOLEAN, DOUBLE}
 
     public CassandraAttribute (String name, CassandraTypes type, Boolean multipleAttributes) {
         this.name = name;
@@ -18,14 +18,16 @@ public class CassandraAttribute {
             case "objectid":
             case "id":
                 return CassandraTypes.UUID;
-            case "int":
-            case "double":
+            case "number":
+                return CassandraTypes.DOUBLE;
             case "integer":
                 return CassandraTypes.INT;
             case "date":
                 return CassandraTypes.TIMESTAMP;
             case "string":
                 return CassandraTypes.TEXT;
+            case "boolean":
+                return CassandraTypes.BOOLEAN;
 
         }
 

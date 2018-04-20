@@ -12,6 +12,7 @@ public class NosqlConfigurationData {
     public enum mongoValidationLevels {MODERATE, STRICT};
     public enum  mongoValidationActions {WARNING, ERROR};
     public enum  cassandraStrategies {SimpleStrategy, NetworkTopologyStrategy};
+    private boolean mongoIsUniqueCollection;
     private mongoValidationLevels  mongoLevel;
     private mongoValidationActions  mongoAction;
     private cassandraStrategies cassandraStrategy;
@@ -63,5 +64,13 @@ public class NosqlConfigurationData {
 
     public void setCassandraReplicationFactor(String cassandraReplicationFactor) {
         this.cassandraReplicationFactor = cassandraReplicationFactor;
+    }
+
+    public boolean isMongoIsUniqueCollection() {
+        return mongoIsUniqueCollection;
+    }
+
+    public void setMongoIsUniqueCollection(boolean mongoIsUniqueCollection) {
+        this.mongoIsUniqueCollection = mongoIsUniqueCollection;
     }
 }

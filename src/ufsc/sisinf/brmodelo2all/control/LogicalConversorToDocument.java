@@ -100,7 +100,7 @@ public class LogicalConversorToDocument {
         int y = (int) rect.getY();
         Rectangle ret = new Rectangle(x + 60000, y + 60000);
         Object[] cells = logicalModelingComponent.getCells(ret);
-        String instruction = startDB(dbName);
+        String instruction = AppConstants.MONGO_HELP_INSTRUCTIONS + BREAKLINE + BREAKLINE + startDB(dbName);
 
         for (Object cell : cells) {
             if (cell instanceof mxCell) {
@@ -117,7 +117,7 @@ public class LogicalConversorToDocument {
     }
 
     private String startDB(String name) {
-        return SELECTDB.concat(" ").concat(name).concat(BREAKLINE);
+        return  SELECTDB.concat(" ").concat(name).concat(BREAKLINE);
     }
 
     private String addColletion(mxCell objectCell) {
