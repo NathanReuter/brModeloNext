@@ -193,7 +193,8 @@ public class MenuBar extends JMenuBar {
 				"/ufsc/sisinf/brmodelo2all/ui/images/menu/mongoicon.png"));
 		menu.add(mainWindow.bind("Gerar modelagem para Cassandra (Colunar)", new ConvertLogicalToCassandraAction(),
 				"/ufsc/sisinf/brmodelo2all/ui/images/menu/cassandraicon.png"));
-		menu.add(mainWindow.bind("Gerar modelagem para Redis (Chave-Valor)", new ConvertLogicalToRedisAction()));
+		menu.add(mainWindow.bind("Gerar modelagem para Redis (Chave-Valor)", new ConvertLogicalToRedisAction(),
+				"/ufsc/sisinf/brmodelo2all/ui/images/menu/redislogo.png"));
 		menu.addSeparator();
 		menu.add(mainWindow.bind("Configurações", new NosqlConfigurationAction(),
 				"/ufsc/sisinf/brmodelo2all/ui/images/menu/cog.png"));

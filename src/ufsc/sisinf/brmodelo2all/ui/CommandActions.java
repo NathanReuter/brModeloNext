@@ -1867,7 +1867,7 @@ public class CommandActions {
 			NoSqlEditor sqlEditor = new NoSqlEditor();
 			sqlEditor.setTitle(mxResources.get("nosqlEditorMongodb"));
 			mainWindow.getDesktop().add(sqlEditor, -1);
-			LogicalConversorToDocument documentConversor = new LogicalConversorToDocument(modelingComponent, sqlEditor);
+			LogicalConversorToMongo documentConversor = new LogicalConversorToMongo(modelingComponent, sqlEditor);
 			documentConversor.convertModeling();
 			mainWindow.openNoSqlEditor(sqlEditor);
 		}

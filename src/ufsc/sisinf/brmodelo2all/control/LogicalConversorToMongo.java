@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import ufsc.sisinf.brmodelo2all.util.AppConstants;
 
+import javax.swing.*;
+
 /**
  * Esta classe ira transformar os blocos/colecoes/atributos do modelo logico do
  * NoSQL para instrucoes shell do banco de documento MongoDB. Os blocos e colecoes sao do tipo
@@ -41,7 +43,7 @@ import ufsc.sisinf.brmodelo2all.util.AppConstants;
 
 // TODO GENERATE INSTRUCTION FOR DISJUNCTION
 
-public class LogicalConversorToDocument {
+public class LogicalConversorToMongo {
 
     private final ModelingComponent logicalModelingComponent;
     private final NoSqlEditor sqlEditor;
@@ -80,8 +82,9 @@ public class LogicalConversorToDocument {
     private String dbName;
     private String mongoActionLevel;
     private String mongoValitationLevel;
+    private Boolean oneSingleCollection;
 
-    public LogicalConversorToDocument(final ModelingComponent logicalModelingComponent, final NoSqlEditor sqlEditor) {
+    public LogicalConversorToMongo(final ModelingComponent logicalModelingComponent, final NoSqlEditor sqlEditor) {
         this.logicalModelingComponent = logicalModelingComponent;
         this.sqlEditor = sqlEditor;
         configData = NosqlConfigurationData.getInstance();
@@ -91,6 +94,7 @@ public class LogicalConversorToDocument {
         dbName = configData.getDbName();
         mongoActionLevel = configData.getMongoValidationActions().toLowerCase();
         mongoValitationLevel = configData.getMongoValidationLevel().toLowerCase();
+        oneSingleCollection = configData.isMongoIsUniqueCollection();
     }
 
     public void convertModeling() {
@@ -102,14 +106,34 @@ public class LogicalConversorToDocument {
         Object[] cells = logicalModelingComponent.getCells(ret);
         String instruction = AppConstants.MONGO_HELP_INSTRUCTIONS + BREAKLINE + BREAKLINE + startDB(dbName);
 
-        for (Object cell : cells) {
-            if (cell instanceof mxCell) {
-                mxCell objectCell = (mxCell) cell;
+        if (oneSingleCollection) {
+//            String uniqueCollectionName = JOptionPane.showInputDialog("Digite o nome da coleção única");
+            String uniqueCollectionName = "SingleCollection";
+            mxCell parrentObjectCell = new mxCell();
+            parrentObjectCell.setValue(uniqueCollectionName);
 
-                if (objectCell.getValue() instanceof Collection) {
-                    instruction += addColletion(objectCell);
+            for (Object cell : cells) {
+                if (cell instanceof mxCell) {
+                    mxCell objectCell = (mxCell) cell;
+
+                    if (objectCell.getValue() instanceof Collection) {
+                        parrentObjectCell.insert((mxCell) cell);
+                    }
+
                 }
+            }
 
+            instruction += addColletion(parrentObjectCell);
+        } else {
+            for (Object cell : cells) {
+                if (cell instanceof mxCell) {
+                    mxCell objectCell = (mxCell) cell;
+
+                    if (objectCell.getValue() instanceof Collection) {
+                        instruction += addColletion(objectCell);
+                    }
+
+                }
             }
         }
 
@@ -164,7 +188,10 @@ public class LogicalConversorToDocument {
             if (objectCell.getChildAt(i).getValue() instanceof Collection) {
                 block = (Collection) objectCell.getChildAt(i).getValue();
                 block.setDisjunction(false);
-                ((Collection) objectCell.getValue()).setDisjunction(false);
+                if (!oneSingleCollection) {
+                    ((Collection) objectCell.getValue()).setDisjunction(false);
+                }
+
             }
 
 //          Se for tipo disjunção
@@ -249,10 +276,18 @@ public class LogicalConversorToDocument {
         }
     }
 
+    public String filterType (String type) {
+        if (type.equalsIgnoreCase("integer")) {
+            return "number";
+        }
+
+        return type.toLowerCase();
+    }
+
     private void addAttribute(mxICell objectCell, String INDENT) {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
         String attributeName = objectCell.getValue().toString();
-        String attributeType = attributeObject.getType();
+        String attributeType = filterType(attributeObject.getType());
 
         if (attributeObject.isIdentifierAttribute()) {
             attributeType = TYPEOBJECTID;
@@ -273,7 +308,7 @@ public class LogicalConversorToDocument {
         NoSqlAttributeObject attributeObject = (NoSqlAttributeObject) objectCell.getValue();
         String maximumLine = attributeObject.getMaximumCardinality() == 'n' ? "" : BREAKLINE + INDENT + TABL2  + "maxItems" + COLON + attributeObject.getMaximumCardinality() + COMMA;
         String attributeType = (attributeObject.isIdentifierAttribute() || attributeObject.isReferenceAttribute())
-                ? TYPEOBJECTID : attributeObject.getType();
+                ? TYPEOBJECTID : filterType(attributeObject.getType());;
 
         jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString()  + COLON + SPACE
                 + OPENBRACES
@@ -350,7 +385,7 @@ public class LogicalConversorToDocument {
                 if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
                     NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();
                     if (attribute.isIdentifierAttribute())
-                        return BREAKLINE + QUOTATIONMARK + "id" + QUOTATIONMARK + SPACE + COLON + SPACE
+                        return BREAKLINE + "id" + SPACE + COLON + SPACE
                             + QUOTATIONMARK + "#"
                             + ((NoSqlAttributeObject) objectCell.getChildAt(i).getValue()).getName() + QUOTATIONMARK
                             + COMMA;
