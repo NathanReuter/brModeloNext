@@ -331,8 +331,6 @@ public class LogicalConversorToMongo {
 
         jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
-                + blockIdIntruction(objectCell)
-
                 + BREAKLINE + INDENT + TABL2 + BSONTYPE  + COLON + SPACE + QUOTATIONMARK + "array" + QUOTATIONMARK+ COMMA
                 + BREAKLINE + INDENT + TABL2 + "minItems"  + COLON + block.getMinimumCardinality() + COMMA
                 + maximumLine
@@ -362,7 +360,6 @@ public class LogicalConversorToMongo {
         jsonSchemaIntruction += BREAKLINE + INDENT + TAB + objectCell.getValue().toString() + COLON + SPACE
                 + OPENBRACES
                     + BREAKLINE + INDENT + TABL2  + BSONTYPE + COLON + SPACE + QUOTATIONMARK + "object" + QUOTATIONMARK + COMMA
-                    + blockIdIntruction(objectCell)
                 + BREAKLINE  + INDENT + TABL2  + "properties"  + COLON + OPENBRACES;
         // If the block has child encapsulate the block or attribute inside this
         // block.
@@ -377,23 +374,6 @@ public class LogicalConversorToMongo {
 
         jsonSchemaIntruction += BREAKLINE  + INDENT + TABL2 + "additionalProperties" + " : false" + COMMA
                 + BREAKLINE + INDENT + TAB + CLOSEBRACES + COMMA;
-    }
-
-    private String blockIdIntruction(mxICell objectCell) {
-        if (objectCell.getChildCount() > 0) {
-            for (int i = 0; i < objectCell.getChildCount(); i++) {
-                if (objectCell.getChildAt(i).getValue() instanceof NoSqlAttributeObject) {
-                    NoSqlAttributeObject attribute = (NoSqlAttributeObject) objectCell.getChildAt(i).getValue();
-                    if (attribute.isIdentifierAttribute())
-                        return BREAKLINE + "id" + SPACE + COLON + SPACE
-                            + QUOTATIONMARK + "#"
-                            + ((NoSqlAttributeObject) objectCell.getChildAt(i).getValue()).getName() + QUOTATIONMARK
-                            + COMMA;
-                }
-            }
-        }
-
-        return "";
     }
 
     private void addToList(List<String> list, String value) {
