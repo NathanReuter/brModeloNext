@@ -1,8 +1,4 @@
 package ufsc.sisinf.brmodelo2all.control.RedisConversor;
-
-
-import ufsc.sisinf.brmodelo2all.control.CassandraConversor.CassandraAttribute;
-import ufsc.sisinf.brmodelo2all.control.CassandraConversor.CassandraObjectData;
 import ufsc.sisinf.brmodelo2all.control.NosqlConfigurationData;
 import ufsc.sisinf.brmodelo2all.util.AppConstants;
 
@@ -24,21 +20,14 @@ public class RedisInstructionsBuilder {
 
     /* Language Tokens*/
     static final String COMMA = ", ";
-    static final String SEMICOLON = ";";
-    static final String COLON = ":";
     static final String BREAKLINE = "\n";
     static final String OPENBRACES = "{";
     static final String CLOSEBRACES = "}";
     static final String OPENPARENTHESES = "(";
     static final String CLOSEPARENTHESES = ")";
-    static final String OPENBRACKETS = "[";
-    static final String CLOSEBRACKTS = "]";
-    static final String OPENCHEVRON = "<";
-    static final String CLOSECHEVRON = ">";
     static final String SPACE = " ";
     static final String EQUAL = "=";
     static final String ONEQUOTE = "'";
-    static final String DOUBLEQUOTE = "\"";
     static final String TAB = "  ";
 
 

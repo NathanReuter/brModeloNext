@@ -17,7 +17,6 @@ public class LogicalToRedisConversor {
     private ModelingComponent logicalModelingComponent;
     private NoSqlEditor sqlEditor;
     private RedisInstructionsBuilder instructionsBuilder;
-    private enum TableType {TABLE, NEWTYPE};
 
     public LogicalToRedisConversor(final ModelingComponent logicalModelingComponent, final NoSqlEditor sqlEditor) {
         this.logicalModelingComponent = logicalModelingComponent;
@@ -59,35 +58,24 @@ public class LogicalToRedisConversor {
         sqlEditor.insertSqlInstruction(instructions.concat(instructionsBuilder.genExecutionInstruction()));
     }
 
-    private boolean collectionsHasIdentifier (mxICell collection) {
-        if (collection.getChildCount() > 0) {
-            for (mxICell children : getCellChild(collection)) {
-                if (children.getValue() instanceof NoSqlAttributeObject) {
-                    if (((NoSqlAttributeObject) children.getValue()).isIdentifierAttribute()) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
     private RedisObjectData verifyCellObjects (mxCell objectCell) {
         RedisObjectData objectData = new RedisObjectData();
         objectData.setObjectName(((Collection) objectCell.getValue()).getName());
 
         for (mxICell childrenCell : getCellChild(objectCell)) {
             if (childrenCell.getValue() instanceof Collection) {
-                objectData.addAttributes(((Collection) childrenCell.getValue()).getName());
+                Collection childBlock = (Collection) childrenCell.getValue();
+                if ((childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction())) {
+                    objectData.addAttributes(childBlock.getName());
+                }
             } else if (childrenCell.getValue() instanceof NoSqlAttributeObject) {
-                objectData.addAttributes(((NoSqlAttributeObject) childrenCell.getValue()).getName());
+                NoSqlAttributeObject attribute = (NoSqlAttributeObject) childrenCell.getValue();
+                if ((attribute.getMinimumCardinality() == 49) || attribute.isIdentifierAttribute()) {
+                    objectData.addAttributes(((NoSqlAttributeObject) childrenCell.getValue()).getName());
+                }
             }
         }
 
         return objectData;
     }
-
-    /* Disjunction cases can't be modeled in cassandra collum type or required statements*/
-
 }
