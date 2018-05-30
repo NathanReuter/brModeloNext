@@ -107,8 +107,7 @@ public class LogicalConversorToMongo {
         String instruction = AppConstants.MONGO_HELP_INSTRUCTIONS + BREAKLINE + BREAKLINE + startDB(dbName);
 
         if (oneSingleCollection) {
-//            String uniqueCollectionName = JOptionPane.showInputDialog("Digite o nome da coleção única");
-            String uniqueCollectionName = "SingleCollection";
+            String uniqueCollectionName = JOptionPane.showInputDialog("Digite o nome da coleção única");
             mxCell parrentObjectCell = new mxCell();
             parrentObjectCell.setValue(uniqueCollectionName);
 
@@ -279,6 +278,8 @@ public class LogicalConversorToMongo {
     public String filterType (String type) {
         if (type.equalsIgnoreCase("integer")) {
             return "number";
+        } else if (type.equalsIgnoreCase("boolean")) {
+            return "bool";
         }
 
         return type.toLowerCase();
