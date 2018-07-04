@@ -50,7 +50,9 @@ public class RedisInstructionsBuilder {
     }
 
     public String genInitialSupportInstructions () {
-        return "local function split(inputstr, sep)\n" +
+        return AppConstants.Redis_HELP_INSTRUCTIONS + BREAKLINE + BREAKLINE +
+
+                "local function split(inputstr, sep)\n" +
                 "        if sep == nil then\n" +
                 "                sep = \"%s\"\n" +
                 "        end\n" +
@@ -83,6 +85,15 @@ public class RedisInstructionsBuilder {
                 " \tend\n" +
                 "\n" +
                 "\treturn isCorrect\n" +
+                "end" +
+                "\n" +
+                "\n" +
+                "local function prettyPrinter(result)\n" +
+                "  if (result) then \n" +
+                "    return 'Schema is Correct'\n" +
+                "  end\n" +
+                "\n" +
+                "  return 'Error in validation'\n" +
                 "end" + BREAKLINE + BREAKLINE;
     }
 
@@ -127,6 +138,6 @@ public class RedisInstructionsBuilder {
     }
 
     public String genExecutionInstruction() {
-        return RETURN + SPACE + "checkCollectionCase(findCollection(KEYS[1]));";
+        return RETURN + SPACE + "prettyPrinter(checkCollectionCase(findCollection(KEYS[1])));";
     }
 }

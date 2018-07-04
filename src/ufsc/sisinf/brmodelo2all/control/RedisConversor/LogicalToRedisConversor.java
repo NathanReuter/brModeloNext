@@ -65,7 +65,7 @@ public class LogicalToRedisConversor {
         for (mxICell childrenCell : getCellChild(objectCell)) {
             if (childrenCell.getValue() instanceof Collection) {
                 Collection childBlock = (Collection) childrenCell.getValue();
-                if ((childBlock.getMinimumCardinality() == 49 && !childBlock.getDisjunction())) {
+                if ((childBlock.getMinimumCardinality() == 49)) {
                     objectData.addAttributes(childBlock.getName());
                 }
             } else if (childrenCell.getValue() instanceof NoSqlAttributeObject) {

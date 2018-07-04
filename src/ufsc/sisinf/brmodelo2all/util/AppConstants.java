@@ -31,6 +31,12 @@ public class AppConstants {
 					"# 1: Save the file like 'file.cql'\n" +
 					"# 2: Run the command in your terminal: \n" +
 					"# 	$ cqlsh -f 'file/location/path/file.cql'";
+	public static final String Redis_HELP_INSTRUCTIONS =
+			"-- This is an automatic generated schema code built to be interpred by Redis Enviroment. \n" +
+					"-- To run it properly: \n" +
+					"--   1: Save file like 'file.lua'\n" +
+					"--   2: Run the command in your terminal:\n" +
+					"--   $ redis-cli --eval 'file/location/path/file.lua' collectionToTest:id attribute1 attribute2...atributeN";
 
 
 }
